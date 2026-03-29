@@ -18,16 +18,17 @@ public class SavFileEntry
         if (type.HasOffset())
         {
             uint offset = reader.ReadUInt32();
-            uint count = 0;
+
+            if (type == DataType.Bool64bitKey && offset == 0)
+                return;
 
             if (type.IsArray())
             {
-                using (reader.CreateScope())
-                    count = reader.ReadUInt32At(offset);
-
                 var singleType = type.ToSingle();
-                using (reader.CreateScopeAt(offset + 4))
+                using (reader.CreateScopeAt(offset))
                 {
+                    uint count = reader.ReadUInt32();
+
                     var array = new object[count];
                     for (uint i = 0; i < count; i++)
                         array[i] = ReadValue(reader, singleType);

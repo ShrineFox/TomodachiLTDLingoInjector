@@ -21,6 +21,19 @@ public partial class MainFrm : Form
         AllowDrop = true;
         DragEnter += MainFrm_DragEnter;
         DragDrop += OnFileDropped;
+
+        if (!HashManager.IsInitialized)
+        {
+            var path = Path.Combine("Data", "GameDataListFull.csv");
+
+            if (File.Exists(path))
+                HashManager.Initialize(path);
+            else
+            {
+                WinFormsUtility.ErrorMessage("Failed to load hashes. The file 'GameDataListFull.csv' was not found in the 'Data' folder.");
+                Close();
+            }
+        }
     }
 
     private void MainFrm_DragEnter(object? sender, DragEventArgs e)

@@ -1,5 +1,7 @@
 ﻿using LTDSaveEditor.Core;
+using LTDSaveEditor.Core.SAV;
 using LTDSaveEditor.WinForms.Utility;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace LTDSaveEditor.WinForms.Forms;
 
@@ -13,83 +15,19 @@ public partial class EditorFrm : Form
         SaveInstance = instance;
 
         closeToolStripMenuItem.Click += (_, _) => Close();
-        gamedataTree.AfterSelect += GamdataTree_AfterSelect;
+
+        dockPanel.Theme = new VS2015DarkTheme();
+        CreateTab("Player", SaveInstance.Player);
+        CreateTab("Mii", SaveInstance.Mii);
+        CreateTab("Map", SaveInstance.Map);
     }
 
-    private void GamdataTree_AfterSelect(object? sender, TreeViewEventArgs e)
+    private async void CreateTab(string tabName, SavFile savFile)
     {
-        if (e.Node?.Tag is not uint hash) return;
+        var page = new EditorPage(savFile);
+        var dock = DockableControl.Create(page, tabName);
 
-
-        if (SaveInstance.Player.TryGetValue(hash, out var entry))
-        {
-            label1.Text = $"Hash: {hash:X} | Value: {entry.Value} | Type: {entry.DataType}";
-        }
-    }
-
-    protected override async void OnLoad(EventArgs e)
-    {
-        base.OnLoad(e);
-
-        if (!HashManager.IsInitialized)
-        {
-
-            var path = Path.Combine("Data", "GameDataListFull.csv");
-
-            if (File.Exists(path))
-                HashManager.Initialize(path);
-            else
-            {
-                WinFormsUtility.ErrorMessage("Failed to load hashes. The file 'GameDataListFull.csv' was not found in the 'Data' folder.");
-                return;
-            }
-        }
-
-        LoadGameData();
-    }
-
-    public async void LoadGameData()
-    {
-        gamedataTree.BeginUpdate();
-        foreach (var (hash, entry) in SaveInstance.Player.Entries)
-        {
-           
-            var name = HashManager.GetName(hash);
-            var parts = name.Split('.');
-
-            TreeNodeCollection currentLevel = gamedataTree.Nodes;
-            TreeNode? currentNode = null;
-
-            foreach (var part in parts)
-            {
-                // Try to find existing node at this level
-                currentNode = null;
-
-                foreach (TreeNode node in currentLevel)
-                {
-                    if (node.Text == part)
-                    {
-                        currentNode = node;
-                        break;
-                    }
-                }
-
-                // If not found, create it
-                if (currentNode == null)
-                {
-                    currentNode = new TreeNode(part);
-                    currentLevel.Add(currentNode);
-                }
-
-                // Move down one level
-                currentLevel = currentNode.Nodes;
-            }
-
-            // Assign tag only to the final node
-            currentNode?.Text += $" ({entry.Value})";
-            currentNode?.Tag = hash;
-        }
-        gamedataTree.EndUpdate();
+        dock.Show(dockPanel, DockState.Document);
     }
 
     private void EditorFrm_FormClosing(object sender, FormClosingEventArgs e)
