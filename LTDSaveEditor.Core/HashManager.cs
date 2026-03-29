@@ -22,8 +22,15 @@ public class GameDataMap : ClassMap<GameData>
 
 public static class HashManager
 {
-    public static List<GameData> Hashes { get; private set; } = [];
+    public static Dictionary<uint, GameData> Hashes { get; private set; } = [];
     public static bool IsInitialized => Hashes.Count > 0;
+
+    public static string GetName(uint hash)
+    {
+        if (Hashes.TryGetValue(hash, out var data) && data.Name != null)
+            return data.Name;
+        return "< Unknown >";
+    }
 
     public static void Initialize(string hashesCSV)
     {
@@ -42,6 +49,6 @@ public static class HashManager
 
         csv.Context.RegisterClassMap<GameDataMap>();
 
-        Hashes = [.. csv.GetRecords<GameData>()];
+        Hashes = csv.GetRecords<GameData>().ToDictionary(x => x.Number, y => y);
     }
 }

@@ -1,18 +1,21 @@
-﻿using BinaryReader = AeonSake.BinaryTools.BinaryReader;
+﻿using System.Diagnostics.CodeAnalysis;
+using BinaryReader = AeonSake.BinaryTools.BinaryReader;
 
 namespace LTDSaveEditor.Core.SAV;
 
 public class SavFile
 {
-    public static byte[] Magic = { 1, 2, 3, 4 };
+    public static byte[] Magic = { 4,3,2,1 };
 
     public int Version { get; set; }
     public int SaveDataOffset { get; set; }
 
-    public List<SavFileEntry> Entries = [];
+    public Dictionary<uint, SavFileEntry> Entries = [];
 
-    public SavFile(BinaryReader reader)
+    public SavFile(Stream stream)
     {
+        using var reader = new BinaryReader(stream);
+
         var magic = reader.ReadByteArray(4);
 
         if (!Magic.SequenceEqual(magic))
@@ -33,7 +36,20 @@ public class SavFile
                 continue;
             }
 
-            Entries.Add(new SavFileEntry(hash, currentData, reader));
+            var entry = new SavFileEntry(hash, currentData, reader);
+            Entries.TryAdd(hash, entry);
         }
+    }
+
+    public bool TryGetValue(uint hash, [MaybeNullWhen(false)] out SavFileEntry entry)
+    {
+        if (Entries.TryGetValue(hash, out var val))
+        {
+            entry = val;
+            return true;
+        }
+
+        entry = null;
+        return false;
     }
 }

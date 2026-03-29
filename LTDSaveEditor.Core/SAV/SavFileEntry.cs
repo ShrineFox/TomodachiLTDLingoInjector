@@ -8,10 +8,12 @@ public class SavFileEntry
 { 
     public uint Hash { get; }
     public object? Value { get; set; }
+    public DataType DataType { get; set; }
 
     public SavFileEntry(uint hash, DataType type, BinaryReader reader)
     {
         Hash = hash;
+        DataType = type;
 
         if (type.HasOffset())
         {
@@ -60,10 +62,10 @@ public class SavFileEntry
         DataType.UInt => reader.ReadUInt32(),
         DataType.Int64 => reader.ReadInt64(),
         DataType.UInt64 => reader.ReadUInt64(),
-        DataType.WString16 => reader.ReadString(16, Encoding.Unicode),
-        DataType.WString32 => reader.ReadString(32, Encoding.Unicode),
-        DataType.WString64 => reader.ReadString(64, Encoding.Unicode),
-        DataType.Bool64bitKey => throw new NotImplementedException(),
+        DataType.WString16 => reader.ReadString(16 * 2, Encoding.Unicode),
+        DataType.WString32 => reader.ReadString(32 * 2, Encoding.Unicode),
+        DataType.WString64 => reader.ReadString(64 * 2, Encoding.Unicode),
+        DataType.Bool64bitKey => null!, // Not present in Tomodachi Life
         _ => throw new NotImplementedException($"Reading for {type} is not implemented."),
     };
 }

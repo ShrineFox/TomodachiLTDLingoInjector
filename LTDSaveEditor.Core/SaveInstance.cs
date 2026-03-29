@@ -1,6 +1,4 @@
 ﻿using LTDSaveEditor.Core.SAV;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace LTDSaveEditor.Core;
 
@@ -8,9 +6,9 @@ public class SaveInstance
 {
     public static SaveInstance FromFolder(string folder) => new(folder);
 
-    SavFile Mii;
-    SavFile Map;
-    SavFile Player;
+    public SavFile Player { get; set; }
+    public SavFile Mii { get; set; }
+    public SavFile Map { get; set; }
 
     public string Folder { get; }
 
@@ -23,5 +21,18 @@ public class SaveInstance
             throw new Exception("Folder does not exist.");
 
         Folder = folder;
+
+        var playerSave = Path.Combine(folder, "Player.sav");
+        var miiSave = Path.Combine(folder, "Mii.sav");
+        var mapSave = Path.Combine(folder, "Map.sav");
+
+        using var playerStream = File.OpenRead(playerSave);
+        Player = new SavFile(playerStream);
+
+        using var miiStream = File.OpenRead(miiSave);
+        Mii = new SavFile(miiStream);
+
+        using var mapStream = File.OpenRead(mapSave);
+        Map = new SavFile(mapStream);
     }
 }

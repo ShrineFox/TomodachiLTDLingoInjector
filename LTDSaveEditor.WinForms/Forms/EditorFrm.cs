@@ -10,7 +10,21 @@ public partial class EditorFrm : Form
     {
         InitializeComponent();
 
-        SaveInstance = instance;       
+        SaveInstance = instance;
+
+        closeToolStripMenuItem.Click += (_, _) => Close();
+        gamedataTree.AfterSelect += GamdataTree_AfterSelect;
+    }
+
+    private void GamdataTree_AfterSelect(object? sender, TreeViewEventArgs e)
+    {
+        if (e.Node?.Tag is not uint hash) return;
+
+
+        if (SaveInstance.Player.TryGetValue(hash, out var entry))
+        {
+            label1.Text = $"Hash: {hash:X} | Value: {entry.Value} | Type: {entry.DataType}";
+        }
     }
 
     protected override async void OnLoad(EventArgs e)
@@ -37,9 +51,10 @@ public partial class EditorFrm : Form
     public async void LoadGameData()
     {
         gamedataTree.BeginUpdate();
-        foreach (var gameData in HashManager.Hashes)
+        foreach (var (hash, entry) in SaveInstance.Player.Entries)
         {
-            var name = gameData.Name ?? "< Unknown >";
+           
+            var name = HashManager.GetName(hash);
             var parts = name.Split('.');
 
             TreeNodeCollection currentLevel = gamedataTree.Nodes;
@@ -71,8 +86,8 @@ public partial class EditorFrm : Form
             }
 
             // Assign tag only to the final node
-            currentNode?.Text += $" ({gameData.Number})";
-            currentNode?.Tag = gameData.Number;
+            currentNode?.Text += $" ({entry.Value})";
+            currentNode?.Tag = hash;
         }
         gamedataTree.EndUpdate();
     }
