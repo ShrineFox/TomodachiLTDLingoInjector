@@ -142,13 +142,13 @@ public class SavFileEntry
                 writer.Write((ulong)value);
                 break;
             case DataType.WString16:
-                writer.Write((string)value, 16, Encoding.Unicode);
+                writer.Write((string)value, 16 * 2, Encoding.Unicode);
                 break;
             case DataType.WString32:
-                writer.Write((string)value, 32, Encoding.Unicode);
+                writer.Write((string)value, 32 * 2, Encoding.Unicode);
                 break;
             case DataType.WString64:
-                writer.Write((string)value, 64, Encoding.Unicode);
+                writer.Write((string)value, 64 * 2, Encoding.Unicode);
                 break;
 
             default:
@@ -199,11 +199,13 @@ public class SavFileEntry
                             int byteIndex = i / 8;
                             int bitIndex = i % 8;
 
-                            BitHelper.Set(bitBytes[byteIndex], bitIndex);
+                            bitBytes[byteIndex] = BitHelper.Set(bitBytes[byteIndex], bitIndex);
                         }
                     }
 
                     w.Write(bitBytes);
+
+                    w.Align(4);
 
                 }
                 else
