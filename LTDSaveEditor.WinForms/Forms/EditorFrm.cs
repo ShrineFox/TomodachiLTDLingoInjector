@@ -28,16 +28,16 @@ public partial class EditorFrm : Form
 
             try
             {
-                var dir = Path.Combine(SaveInstance.Folder, "Temp");
-                Directory.CreateDirectory(dir);
+                if (!Directory.Exists(SaveInstance.Folder))
+                    throw new Exception("Save folder does not exist.");
 
-                var playerPath = Path.Combine(dir, "Player.sav");
+                var playerPath = Path.Combine(SaveInstance.Folder, "Player.sav");
                 SaveInstance.Player.SaveTo(playerPath);
 
-                var miiPath = Path.Combine(dir, "Mii.sav");
+                var miiPath = Path.Combine(SaveInstance.Folder, "Mii.sav");
                 SaveInstance.Mii.SaveTo(miiPath);
 
-                var mapPath = Path.Combine(dir, "Map.sav");
+                var mapPath = Path.Combine(SaveInstance.Folder, "Map.sav");
                 SaveInstance.Map.SaveTo(mapPath);
             }
             catch (Exception ex)
