@@ -70,7 +70,7 @@ public partial class EditorPage : UserControl
             dgv.RowPostPaint += (s, e) =>
             {
                 var headerBounds = new Rectangle(e.RowBounds.Left, e.RowBounds.Top, dgv.RowHeadersWidth, e.RowBounds.Height);
-                var roxIndexName = (e.RowIndex + 1).ToString();
+                var roxIndexName = e.RowIndex.ToString();
                 e.Graphics.DrawString(roxIndexName, Font, Brushes.White, headerBounds, RowHeaderStringFormat);
             };
 
