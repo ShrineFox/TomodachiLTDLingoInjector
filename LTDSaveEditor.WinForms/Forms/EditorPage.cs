@@ -1,5 +1,6 @@
 ﻿using LTDSaveEditor.Core;
 using LTDSaveEditor.Core.SAV;
+using LTDSaveEditor.WinForms.Forms.TreeViewCells;
 using LTDSaveEditor.WinForms.Settings;
 using LTDSaveEditor.WinForms.Utility;
 
@@ -38,7 +39,8 @@ public partial class EditorPage : UserControl
 
         if (SaveFile.TryGetValue(hash, out var entry))
         {
-            var name = HashManager.GetName(hash);
+            var data = HashManager.TryGetData(hash, out var d) ? d : null;
+            var name = data?.Name ?? "< Unknown >";
 
             var dgv = new DataGridView
             {
@@ -80,7 +82,7 @@ public partial class EditorPage : UserControl
                 var targetType = array.GetType().GetElementType();
                 if (targetType == null) return;
 
-                var column = CreateColumn(targetType);
+                var column = CreateColumn(entry, data, targetType);
                 column.ValueType = targetType;
                 column.HeaderText = name;
                 column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -101,12 +103,7 @@ public partial class EditorPage : UserControl
                 {
                     if (entry.DataType is DataType.EnumArray && array.GetValue(e.RowIndex) is uint enumHash)
                     {
-                        e.Value = UserOptions.Instance.EnumDisplayMode switch
-                        {
-                            EnumDisplayMode.Name or EnumDisplayMode.Hash => enumHash.ToString("X"),
-                            EnumDisplayMode.Number => enumHash.ToString(),
-                            _ => throw new NotImplementedException(),
-                        };
+                        e.Value = GetFormattedHash(data, enumHash);
                     }
                 };
 
@@ -129,7 +126,7 @@ public partial class EditorPage : UserControl
                 if (targetType == null) return;
 
 
-                var column = CreateColumn(targetType);
+                var column = CreateColumn(entry, data, targetType);
                 column.ValueType = targetType;
                 column.HeaderText = name;
                 column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -145,12 +142,7 @@ public partial class EditorPage : UserControl
                 {
                     if (entry.DataType is DataType.Enum && entry.Value is uint enumHash)
                     {
-                        e.Value = UserOptions.Instance.EnumDisplayMode switch
-                        {
-                            EnumDisplayMode.Name or EnumDisplayMode.Hash => enumHash.ToString("X"),
-                            EnumDisplayMode.Number => enumHash.ToString(),
-                            _ => throw new NotImplementedException(),
-                        };
+                        e.Value = GetFormattedHash(data, enumHash);
                     }
                 };
 
@@ -173,7 +165,20 @@ public partial class EditorPage : UserControl
         }
     }
 
-    public static DataGridViewColumn CreateColumn(Type targetType)
+    private string GetFormattedHash(GameData? data, uint enumHash)
+    {
+        return UserOptions.Instance.EnumDisplayMode switch
+        {
+            EnumDisplayMode.Name => data != null && data.Options.TryGetValue(enumHash, out var t) ? t : GetHashfallback(enumHash),
+            EnumDisplayMode.Hash => enumHash.ToString("X"),
+            EnumDisplayMode.Number => enumHash.ToString(),
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+    private string GetHashfallback(uint enumHash) => enumHash.ToString("X");
+
+    public static DataGridViewColumn CreateColumn(SavFileEntry entry, GameData? data, Type targetType)
     {
         DataGridViewColumn column;
         if (targetType == typeof(bool))
@@ -182,6 +187,9 @@ public partial class EditorPage : UserControl
             column = new DataGridViewTextBoxColumn { DefaultCellStyle = new DataGridViewCellStyle { Format = "G" } };
         else
             column = new DataGridViewTextBoxColumn();
+
+        if (entry.DataType == DataType.Enum || entry.DataType == DataType.EnumArray)
+            column.CellTemplate = new MMH3DataGridCell(data?.Options ?? []);
 
         return column;
     }
