@@ -30,9 +30,9 @@ public class SaveInstance
         Player = new SavFile(playerSave, playerStream);
 
         using var miiStream = File.OpenRead(miiSave);
-        Mii = new SavFile(playerSave, miiStream);
+        Mii = new SavFile(miiSave, miiStream);
 
         using var mapStream = File.OpenRead(mapSave);
-        Map = new SavFile(playerSave, mapStream);
+        Map = new SavFile(mapSave, mapStream);
     }
 }
