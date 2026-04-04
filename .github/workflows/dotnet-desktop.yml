@@ -88,8 +88,8 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore Avalonia
+        run: dotnet restore LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj
 
       - name: Build Avalonia
         run: dotnet build LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj -c Release --no-restore
@@ -102,6 +102,7 @@ jobs:
           --self-contained true
           -p:PublishSingleFile=true
           -o publish/${{ matrix.rid }}
+          --no-restore
 
       - name: Zip output
         shell: pwsh
