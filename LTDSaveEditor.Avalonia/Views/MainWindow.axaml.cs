@@ -1,14 +1,11 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using LTDSaveEditor.Core;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LTDSaveEditor.Avalonia.Views;
 
@@ -17,45 +14,23 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        
+
         // Initialize HashManager if not already done
         if (!HashManager.IsInitialized)
         {
-            string[] possiblePaths = [
-                Path.Combine(AppContext.BaseDirectory, "Data", "GameDataListFull.csv"),
-                Path.Combine(Directory.GetCurrentDirectory(), "Data", "GameDataListFull.csv"),
-                Path.Combine(Directory.GetCurrentDirectory(), "LTDSaveEditor.Avalonia", "Data", "GameDataListFull.csv"),
-                "Data/GameDataListFull.csv"
-            ];
+            var path = Path.Combine("Data", "GameDataListFull.csv");
 
-            foreach (var path in possiblePaths)
-            {
-                if (File.Exists(path))
-                {
-                    HashManager.Initialize(path);
-                    break;
-                }
-            }
+            if (File.Exists(path))
+                HashManager.Initialize(path);
         }
 
         // Initialize FoodManager if not already done
         if (!FoodManager.IsInitialized)
         {
-            string[] possiblePaths = [
-                Path.Combine(AppContext.BaseDirectory, "Data", "food_hashes.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "Data", "food_hashes.json"),
-                Path.Combine(Directory.GetCurrentDirectory(), "LTDSaveEditor.Avalonia", "Data", "food_hashes.json"),
-                "Data/food_hashes.json"
-            ];
-
-            foreach (var path in possiblePaths)
-            {
-                if (File.Exists(path))
-                {
-                    FoodManager.Initialize(path);
-                    break;
-                }
-            }
+            var path = Path.Combine("Data", "food_hashes.json");
+            
+            if (File.Exists(path))
+                FoodManager.Initialize(path);
         }
 
         AddHandler(DragDrop.DropEvent, OnDrop);
@@ -76,7 +51,7 @@ public partial class MainWindow : Window
         if (items != null && items.Any())
         {
             var first = items.First();
-            string? localPath = first.Path.LocalPath;
+            var localPath = first.Path.LocalPath;
 
             if (localPath != null)
             {
@@ -138,7 +113,7 @@ public partial class MainWindow : Window
         if (!RequiredFiles.All(y => files.Contains(y, StringComparer.OrdinalIgnoreCase)))
         {
             StatusText.IsVisible = true;
-            StatusText.Text = "The folder does not contain Required files: " + string.Join(", ", RequiredFiles);
+            StatusText.Text = "The folder does not contain any of the required files: " + string.Join(", ", RequiredFiles);
             return false;
         }
 

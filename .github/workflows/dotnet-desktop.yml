@@ -9,10 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-winforms:
     runs-on: windows-latest
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,59 +20,108 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
-      - name: Build solution
-        run: dotnet build --configuration Release --no-restore
+      - name: Build
+        run: dotnet build LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj -c Release --no-restore
 
       - name: Publish WinForms
-        run: dotnet publish LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj `
-              -c Release `
-              -r win-x64 `
-              --self-contained false `
-              -o publish
+        run: >
+          dotnet publish LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj
+          -c Release
+          -r win-x64
+          --self-contained false
+          -o publish/win-x64
 
-      - name: Compress artifacts
-        run: |
-          Compress-Archive -Path publish\* -DestinationPath LTDSaveEditor-Windows.zip
+      - name: Zip WinForms
         shell: pwsh
+        run: Compress-Archive -Path publish/win-x64/* -DestinationPath LTDSaveEditor-Windows.zip
 
-      - name: Publish application (self-contained)
-        run: dotnet publish LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o selfcontained
+      - name: Publish WinForms self-contained
+        run: >
+          dotnet publish LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -o publish/win-x64-selfcontained
 
-      - name: Compress artifacts (self-contained)
-        run: |
-          Compress-Archive -Path selfcontained\* -DestinationPath LTDSaveEditor-Windows-selfcontained.zip
+      - name: Zip WinForms self-contained
         shell: pwsh
+        run: Compress-Archive -Path publish/win-x64-selfcontained/* -DestinationPath LTDSaveEditor-Windows-selfcontained.zip
 
-
-      - name: Upload artifact
+      - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: LTDSaveEditor-Windows
           path: LTDSaveEditor-Windows.zip
 
-      - name: Upload self-contained artifact
+      - name: Upload Windows self-contained artifact
         uses: actions/upload-artifact@v4
         with:
           name: LTDSaveEditor-Windows-selfcontained
           path: LTDSaveEditor-Windows-selfcontained.zip
 
+  build-avalonia:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            name: Linux-x64
+          - os: macos-latest
+            rid: osx-x64
+            name: macOS-x64
+          - os: macos-latest
+            rid: osx-arm64
+            name: macOS-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build Avalonia
+        run: dotnet build LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj -c Release --no-restore
+
+      - name: Publish Avalonia
+        run: >
+          dotnet publish LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:PublishSingleFile=true
+          -o publish/${{ matrix.rid }}
+
+      - name: Zip output
+        shell: pwsh
+        run: Compress-Archive -Path publish/${{ matrix.rid }}/* -DestinationPath LTDSaveEditor-${{ matrix.name }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LTDSaveEditor-${{ matrix.name }}
+          path: LTDSaveEditor-${{ matrix.name }}.zip
 
   release:
-    needs: build
+    needs: [build-winforms, build-avalonia]
     runs-on: ubuntu-latest
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: LTDSaveEditor-Windows
 
-      - name: Download self-contained artifact
+    steps:
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: LTDSaveEditor-Windows-selfcontained
+          path: artifacts
 
       - name: Create GitHub Release
         id: create_release
@@ -82,29 +129,58 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "Build_${{ github.run_number }}"
-          release_name: "(Automatic) Build ${{ github.run_number }}"
-          body: "Automated release for commit ${{ github.sha }}"
+          tag_name: Build_${{ github.run_number }}
+          release_name: (Automatic) Build ${{ github.run_number }}
+          body: Automated release for commit ${{ github.sha }}
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset
+      - name: Upload Windows
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./LTDSaveEditor-Windows.zip
+          asset_path: artifacts/LTDSaveEditor-Windows/LTDSaveEditor-Windows.zip
           asset_name: LTDSaveEditor-Windows.zip
           asset_content_type: application/zip
 
-      - name: Upload Release Asset (Self-Contained)
+      - name: Upload Windows self-contained
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./LTDSaveEditor-Windows-selfcontained.zip
+          asset_path: artifacts/LTDSaveEditor-Windows-selfcontained/LTDSaveEditor-Windows-selfcontained.zip
           asset_name: LTDSaveEditor-Windows-selfcontained.zip
           asset_content_type: application/zip
 
+      - name: Upload Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/LTDSaveEditor-Linux-x64/LTDSaveEditor-Linux-x64.zip
+          asset_name: LTDSaveEditor-Linux-x64.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS x64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/LTDSaveEditor-macOS-x64/LTDSaveEditor-macOS-x64.zip
+          asset_name: LTDSaveEditor-macOS-x64.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS arm64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/LTDSaveEditor-macOS-arm64/LTDSaveEditor-macOS-arm64.zip
+          asset_name: LTDSaveEditor-macOS-arm64.zip
+          asset_content_type: application/zip

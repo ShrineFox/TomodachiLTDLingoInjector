@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Layout;
 using LTDSaveEditor.Core;
 using LTDSaveEditor.Core.SAV;
 using System;
@@ -12,78 +11,23 @@ using System.Linq;
 
 namespace LTDSaveEditor.Avalonia.Views;
 
-public class TreeViewNode
-{
-    public string Label { get; set; } = string.Empty;
-    public uint Hash { get; set; }
-    public ObservableCollection<TreeViewNode> Nodes { get; set; } = [];
-}
-
-public class DataGridRowWrapper : System.ComponentModel.INotifyPropertyChanged
-{
-    private object? _value;
-    private EnumOption? _selectedOption;
-
-    public int Index { get; set; }
-    public string? Label { get; set; }
-    public object? Tag { get; set; } // Stores the SavFileEntry
-    public System.Collections.Generic.IEnumerable<EnumOption>? Options { get; set; }
-    
-    public EnumOption? SelectedOption
-    {
-        get => _selectedOption;
-        set
-        {
-            if (_selectedOption != value)
-            {
-                _selectedOption = value;
-                OnPropertyChanged(nameof(SelectedOption));
-                if (value != null)
-                {
-                    Value = value.Value;
-                }
-            }
-        }
-    }
-
-    public object? Value 
-    { 
-        get => _value; 
-        set 
-        {
-            if (_value != value)
-            {
-                _value = value;
-                OnPropertyChanged(nameof(Value));
-            }
-        }
-    }
-
-    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
-    protected virtual void OnPropertyChanged(string propertyName) 
-        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
-}
-
-public class EnumOption
-{
-    public string Label { get; set; } = string.Empty;
-    public uint Value { get; set; }
-
-    public override string ToString() => Label;
-}
-
 public partial class EditorPageControl : UserControl
 {
-    public SavFile SaveFile { get; private set; }
-    private ObservableCollection<TreeViewNode> _rootNodes = [];
+    public SavFile? SaveFile { get; private set; }
+    private readonly ObservableCollection<TreeViewNode> _rootNodes = [];
     private ObservableCollection<DataGridRowWrapper>? _currentRows;
+
+    public EditorPageControl()
+    {
+        InitializeComponent();
+    }
 
     public EditorPageControl(SavFile savFile)
     {
         InitializeComponent();
         SaveFile = savFile;
         GameDataTree.ItemsSource = _rootNodes;
-        
+
         LoadGameData();
     }
 
@@ -91,7 +35,7 @@ public partial class EditorPageControl : UserControl
     {
         if (GameDataTree.SelectedItem is not TreeViewNode node || node.Hash == 0) return;
 
-        if (SaveFile.TryGetEntry(node.Hash, out var entry))
+        if (SaveFile != null && SaveFile.TryGetEntry(node.Hash, out var entry))
         {
             UpdateEditor(entry, node.Hash);
         }
@@ -108,7 +52,7 @@ public partial class EditorPageControl : UserControl
 
         EntryDataGrid.Columns.Clear();
         EntryDataGrid.ItemsSource = null;
-        _currentRows = new ObservableCollection<DataGridRowWrapper>();
+        _currentRows = [];
 
         var data = HashManager.TryGetData(hash, out var d) ? d : null;
         EntryTitle.Text = data?.Name ?? "< Unknown >";
@@ -122,11 +66,11 @@ public partial class EditorPageControl : UserControl
         if (entry.Value is Array array)
         {
             var options = GetEnumOptions(entry, data);
-            
+
             // Show bulk edit for IntArray, EnumArray, or fields with options (like food)
             var canBulkEdit = entry.DataType == DataType.IntArray || entry.DataType == DataType.EnumArray || options != null;
             BulkEditSection.IsVisible = canBulkEdit;
-            
+
             if (canBulkEdit)
             {
                 if (options != null)
@@ -143,17 +87,17 @@ public partial class EditorPageControl : UserControl
                     BulkValueInput.Text = "0";
                 }
             }
-            for (int i = 0; i < array.Length; i++)
+            for (var i = 0; i < array.Length; i++)
             {
                 var val = array.GetValue(i);
-                var row = new DataGridRowWrapper 
-                { 
-                    Index = i, 
-                    Value = val, 
+                var row = new DataGridRowWrapper
+                {
+                    Index = i,
+                    Value = val,
                     Tag = entry,
                     Options = options
                 };
-                
+
                 if (options != null && val is uint hashValue)
                     row.SelectedOption = options.FirstOrDefault(o => o.Value == hashValue);
 
@@ -162,10 +106,10 @@ public partial class EditorPageControl : UserControl
             }
 
             // Create columns
-            EntryDataGrid.Columns.Add(new DataGridTextColumn 
-            { 
-                Header = "Index", 
-                Binding = new Binding("Index"), 
+            EntryDataGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Index",
+                Binding = new Binding("Index"),
                 IsReadOnly = true,
                 Width = new DataGridLength(60)
             });
@@ -180,11 +124,11 @@ public partial class EditorPageControl : UserControl
             var options = GetEnumOptions(entry, data);
             var val = entry.Value;
 
-            var row = new DataGridRowWrapper 
-            { 
-                Index = 0, 
-                Value = val, 
-                Label = data?.Name ?? "Value", 
+            var row = new DataGridRowWrapper
+            {
+                Index = 0,
+                Value = val,
+                Label = data?.Name ?? "Value",
                 Tag = entry,
                 Options = options
             };
@@ -196,10 +140,10 @@ public partial class EditorPageControl : UserControl
             _currentRows.Add(row);
 
             // Property column for context
-            EntryDataGrid.Columns.Add(new DataGridTextColumn 
-            { 
-                Header = "Property", 
-                Binding = new Binding("Label"), 
+            EntryDataGrid.Columns.Add(new DataGridTextColumn
+            {
+                Header = "Property",
+                Binding = new Binding("Label"),
                 IsReadOnly = true,
                 Width = new DataGridLength(1, DataGridLengthUnitType.Auto)
             });
@@ -226,7 +170,7 @@ public partial class EditorPageControl : UserControl
         }
         else if (BulkValueInput.IsVisible)
         {
-            if (int.TryParse(BulkValueInput.Text, out int result))
+            if (int.TryParse(BulkValueInput.Text, out var result))
                 newValue = result;
         }
 
@@ -277,7 +221,7 @@ public partial class EditorPageControl : UserControl
             }
 
             // Check if current value(s) match any food hash
-            bool isFood = false;
+            var isFood = false;
             if (entry.Value is uint hashValue)
             {
                 isFood = FoodManager.FoodHashes.ContainsKey(hashValue);
@@ -303,22 +247,22 @@ public partial class EditorPageControl : UserControl
         {
             return new DataGridTemplateColumn
             {
-                CellTemplate = new FuncDataTemplate<DataGridRowWrapper>((wrapper, _) => 
-                    new CheckBox 
-                    { 
+                CellTemplate = new FuncDataTemplate<DataGridRowWrapper>((wrapper, _) =>
+                    new CheckBox
+                    {
                         [!CheckBox.IsCheckedProperty] = new Binding("Value", BindingMode.TwoWay),
-                        HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Center 
+                        HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Center
                     })
             };
         }
-        
+
         // Handle Enums or fields with options (like food) with ComboBox
         var options = GetEnumOptions(entry, data);
         if (options != null)
         {
             return new DataGridTemplateColumn
             {
-                CellTemplate = new FuncDataTemplate<DataGridRowWrapper>((wrapper, _) => 
+                CellTemplate = new FuncDataTemplate<DataGridRowWrapper>((wrapper, _) =>
                 {
                     var combo = new ComboBox
                     {
@@ -333,11 +277,11 @@ public partial class EditorPageControl : UserControl
                 })
             };
         }
-        
+
         // Use a TextBox template for everything else
         return new DataGridTemplateColumn
         {
-            CellTemplate = new FuncDataTemplate<DataGridRowWrapper>((wrapper, _) => 
+            CellTemplate = new FuncDataTemplate<DataGridRowWrapper>((wrapper, _) =>
             {
                 var tb = new TextBox
                 {
@@ -357,19 +301,21 @@ public partial class EditorPageControl : UserControl
         _rootNodes.Clear();
         var nodesMap = new Dictionary<string, TreeViewNode>();
 
+        if (SaveFile == null) return;
+
         foreach (var (hash, entry) in SaveFile.Entries)
         {
             var name = HashManager.GetName(hash);
             var parts = name.Split('.');
 
             TreeViewNode? currentNode = null;
-            ObservableCollection<TreeViewNode> currentLevel = _rootNodes;
-            string currentPath = "";
+            var currentLevel = _rootNodes;
+            var currentPath = "";
 
             foreach (var part in parts)
             {
                 currentPath = string.IsNullOrEmpty(currentPath) ? part : $"{currentPath}.{part}";
-                
+
                 if (!nodesMap.TryGetValue(currentPath, out currentNode))
                 {
                     currentNode = new TreeViewNode { Label = part };
@@ -381,6 +327,8 @@ public partial class EditorPageControl : UserControl
 
             if (currentNode != null)
             {
+                if (entry.DataType == DataType.Bool64bitKey && entry.Value == null) continue;
+
                 currentNode.Hash = hash;
                 if (entry.Value is Array array)
                     currentNode.Label += $" ({entry.DataType}[{array.Length}])";

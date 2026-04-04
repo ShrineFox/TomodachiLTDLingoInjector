@@ -12,16 +12,21 @@ namespace LTDSaveEditor.Avalonia.Views;
 
 public partial class EditorWindow : AppWindow
 {
-    public SaveInstance SaveInstance { get; private set; }
-    public BackupManager BackupManager { get; }
+    public SaveInstance? SaveInstance { get; private set; }
+    public BackupManager? BackupManager { get; }
     private bool _sessionBackupCreated = false;
-    
+
     private readonly System.Collections.ObjectModel.ObservableCollection<TabViewItem> _tabs = [];
-    
+
+    public EditorWindow()
+    {
+        InitializeComponent();
+    }
+
     public EditorWindow(SaveInstance instance)
     {
         InitializeComponent();
-        
+
         SaveInstance = instance;
         BackupManager = new BackupManager(SaveInstance.Folder);
 
@@ -48,6 +53,7 @@ public partial class EditorWindow : AppWindow
 
     private async void SaveMenu_Click(object? sender, RoutedEventArgs e)
     {
+        if (SaveInstance == null) return;
         try
         {
             if (!Directory.Exists(SaveInstance.Folder))
@@ -55,7 +61,7 @@ public partial class EditorWindow : AppWindow
 
             if (!_sessionBackupCreated)
             {
-                BackupManager.CreateBackup(SaveInstance.Player.Path, SaveInstance.Mii.Path, SaveInstance.Map.Path);
+                BackupManager?.CreateBackup(SaveInstance.Player.Path, SaveInstance.Mii.Path, SaveInstance.Map.Path);
                 _sessionBackupCreated = true;
             }
 
@@ -78,11 +84,13 @@ public partial class EditorWindow : AppWindow
 
     private async void RefreshMenu_Click(object? sender, RoutedEventArgs e)
     {
+        if (SaveInstance == null) return;
+
         try
         {
             _tabs.Clear();
             _sessionBackupCreated = false;
-            
+
             // Re-load SaveInstance directly
             SaveInstance = new SaveInstance(SaveInstance.Folder);
 

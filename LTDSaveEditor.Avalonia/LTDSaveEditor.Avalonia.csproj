@@ -5,14 +5,11 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
-    <AvaloniaResource Include="Assets\Logo.png" />
-    <AvaloniaResource Include="Assets\app.ico" />
-    <AvaloniaResource Include="Assets\Fonts\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +26,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LTDSaveEditor.Core\LTDSaveEditor.Core.csproj" />
-    <ProjectReference Include="..\LTDSaveEditor.Data\LTDSaveEditor.Common.csproj" />
+    <ProjectReference Include="..\LTDSaveEditor.Common\LTDSaveEditor.Common.csproj" />
   </ItemGroup>
+  
+  <PropertyGroup>
+    <!-- Necessary before Avalonia 12.0, was used for accessiblity APIs -->
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
 </Project>
