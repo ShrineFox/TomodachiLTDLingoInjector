@@ -89,7 +89,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore Avalonia
-        run: dotnet restore LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj
+        run: dotnet restore LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj -r ${{ matrix.rid }}
 
       - name: Build Avalonia
         run: dotnet build LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj -c Release --no-restore
