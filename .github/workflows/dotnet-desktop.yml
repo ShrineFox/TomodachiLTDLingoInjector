@@ -26,6 +26,21 @@ jobs:
       - name: Build
         run: dotnet build LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj -c Release --no-restore
 
+      - name: Build
+        run: dotnet build LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj -c Release --no-restore
+
+      - name: Publish Avalonia
+        run: >
+          dotnet publish LTDSaveEditor.Avalonia/LTDSaveEditor.Avalonia.csproj
+          -c Release
+          -r win-x64
+          --self-contained false
+          -o publish/avalonia-win-x64
+
+      - name: Zip Avalonia
+        shell: pwsh
+        run: Compress-Archive -Path publish/avalonia-win-x64/* -DestinationPath LTDSaveEditor-Avalonia-Windows.zip
+
       - name: Publish WinForms
         run: >
           dotnet publish LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj
@@ -50,6 +65,12 @@ jobs:
       - name: Zip WinForms self-contained
         shell: pwsh
         run: Compress-Archive -Path publish/win-x64-selfcontained/* -DestinationPath LTDSaveEditor-Windows-selfcontained.zip
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LTDSaveEditor-Avalonia-Windows
+          path: LTDSaveEditor-Avalonia-Windows.zip
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -135,6 +156,17 @@ jobs:
           body: Automated release for commit ${{ github.sha }}
           draft: false
           prerelease: false
+
+
+      - name: Upload Windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/LTDSaveEditor-Windows/LTDSaveEditor-Avalonia-Windows.zip
+          asset_name: LTDSaveEditor-Avalonia-Windows.zip
+          asset_content_type: application/zip
 
       - name: Upload Windows
         uses: actions/upload-release-asset@v1
