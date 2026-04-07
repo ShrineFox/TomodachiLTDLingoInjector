@@ -14,27 +14,38 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
-        // Initialize HashManager if not already done
-        if (!HashManager.IsInitialized)
-        {
-            var path = Path.Combine("Data", "GameDataListFull.csv");
-
-            if (File.Exists(path))
-                HashManager.Initialize(path);
-        }
-
-        // Initialize FoodManager if not already done
-        if (!FoodManager.IsInitialized)
-        {
-            var path = Path.Combine("Data", "food_hashes.json");
-            
-            if (File.Exists(path))
-                FoodManager.Initialize(path);
-        }
+        TryInitializeReferenceData();
+        
 
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
+    }
+
+    private void TryInitializeReferenceData()
+    {
+        try
+        {
+            if (!HashManager.IsInitialized)
+            {
+                var path = Path.Combine(AppContext.BaseDirectory, "Data", "GameDataListFull.csv");
+
+                if (File.Exists(path))
+                    HashManager.Initialize(path);
+            }
+
+            if (!FoodManager.IsInitialized)
+            {
+                var path = Path.Combine(AppContext.BaseDirectory, "Data", "food_hashes.json");
+
+                if (File.Exists(path))
+                    FoodManager.Initialize(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText.IsVisible = true;
+            StatusText.Text = $"Failed to load bundled data: {ex.Message}";
+        }
     }
 
     private void OnDragOver(object? sender, DragEventArgs e)

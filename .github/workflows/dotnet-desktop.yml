@@ -38,30 +38,11 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path publish/win-x64/* -DestinationPath LTDSaveEditor-Windows.zip
 
-      - name: Publish WinForms self-contained
-        run: >
-          dotnet publish LTDSaveEditor.WinForms/LTDSaveEditor.WinForms.csproj
-          -c Release
-          -r win-x64
-          --self-contained true
-          -p:PublishSingleFile=true
-          -o publish/win-x64-selfcontained
-
-      - name: Zip WinForms self-contained
-        shell: pwsh
-        run: Compress-Archive -Path publish/win-x64-selfcontained/* -DestinationPath LTDSaveEditor-Windows-selfcontained.zip
-
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LTDSaveEditor-Windows
-          path: LTDSaveEditor-Windows.zip
-
-      - name: Upload Windows self-contained artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: LTDSaveEditor-Windows-selfcontained
-          path: LTDSaveEditor-Windows-selfcontained.zip
+          name: LTDSaveEditor-Windows-WinForms
+          path: LTDSaveEditor-Windows-WinForms.zip
 
   build-avalonia:
     strategy:
@@ -104,6 +85,7 @@ jobs:
           -r ${{ matrix.rid }}
           --self-contained true
           -p:PublishSingleFile=true
+          -p:PublishAot=true
           -o publish/${{ matrix.rid }}
           --no-restore
 
@@ -145,18 +127,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/LTDSaveEditor-Windows/LTDSaveEditor-Windows.zip
-          asset_name: LTDSaveEditor-Windows.zip
-          asset_content_type: application/zip
-
-      - name: Upload Windows self-contained
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/LTDSaveEditor-Windows-selfcontained/LTDSaveEditor-Windows-selfcontained.zip
-          asset_name: LTDSaveEditor-Windows-selfcontained.zip
+          asset_path: artifacts/LTDSaveEditor-Windows/LTDSaveEditor-Windows-WinForms.zip
+          asset_name: LTDSaveEditor-Windows-WinForms.zip
           asset_content_type: application/zip
 
       - name: Upload Linux

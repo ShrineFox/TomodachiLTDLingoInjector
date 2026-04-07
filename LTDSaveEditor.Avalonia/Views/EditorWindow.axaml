@@ -43,7 +43,8 @@
         <ui:TabView x:Name="EditorTabView" 
                     CanReorderTabs="False" 
                     Padding="0"
-                    VerticalAlignment="Stretch">
+                    VerticalAlignment="Stretch"
+                    IsAddTabButtonVisible="False">
             <!-- Tabs will be added programmatically -->
         </ui:TabView>
     </DockPanel>

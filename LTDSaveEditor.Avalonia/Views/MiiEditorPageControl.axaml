@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:LTDSaveEditor.Avalonia.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:Class="LTDSaveEditor.Avalonia.MiiEditorPageControl"
+             x:DataType="vm:MiiEditorPageViewModel">
+
+    <Grid Margin="16"
+          ColumnDefinitions="Auto,12,*"
+          RowDefinitions="Auto,12,Auto"
+          VerticalAlignment="Top">
+
+        <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Select a Mii" />
+
+        <ComboBox Grid.Row="0"
+                  Grid.Column="2"
+                  Width="250"
+                  ItemsSource="{Binding Miis}"
+                  SelectedItem="{Binding SelectedMii}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:MiiOptionViewModel">
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <TextBlock Grid.Row="2"
+                   Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Name" />
+
+        <TextBox Grid.Row="2"
+                 Grid.Column="2"
+                 Width="250"
+                 Watermark="Enter Mii name"
+                 HorizontalAlignment="Left"
+                 Text="{Binding SelectedMii.Name}" />
+    </Grid>
+</UserControl>

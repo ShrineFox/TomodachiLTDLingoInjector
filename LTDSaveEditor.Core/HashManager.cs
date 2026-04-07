@@ -1,6 +1,4 @@
-﻿using CsvHelper;
-using CsvHelper.Configuration;
-using LTDSaveEditor.Core.Extensions;
+﻿using LTDSaveEditor.Core.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -11,38 +9,6 @@ public class GameData
     public uint Number { get; set; }
     public string? Name { get; set; }
     public Dictionary<uint, string> Options { get; set; } = [];
-}
-
-public class GameDataMap : ClassMap<GameData>
-{
-    public GameDataMap()
-    {
-        Map(m => m.Number).Index(1);
-        Map(m => m.Name).Index(3);
-        Map(m => m.Options).Index(4).Convert(args =>
-        {
-            if (args.Row.Parser.Count <= 4)
-                return [];
-
-            var field = args.Row.GetField(4);
-
-            if (string.IsNullOrWhiteSpace(field))
-                return [];
-
-            var options = field.Split(';', StringSplitOptions.RemoveEmptyEntries);
-
-            var dict = new Dictionary<uint, string>();
-
-            foreach (var option in options)
-            {
-                var trimmed = option.Trim();
-                uint crc = trimmed.ToMurmur();
-                dict[crc] = trimmed;
-            }
-
-            return dict;
-        });
-    }
 }
 
 public static class HashManager
@@ -76,16 +42,58 @@ public static class HashManager
         if (!File.Exists(hashesCSV))
             throw new FileNotFoundException($"The specified file '{hashesCSV}' does not exist.");
 
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        var hashes = new Dictionary<uint, GameData>();
+
+        foreach (var line in File.ReadLines(hashesCSV))
         {
-            HasHeaderRecord = false,
+            if (!TryParseGameData(line, out var data))
+                continue;
+
+            hashes[data.Number] = data;
+        }
+
+        Hashes = hashes;
+    }
+
+    private static bool TryParseGameData(string line, [MaybeNullWhen(false)] out GameData data)
+    {
+        data = null;
+
+        if (string.IsNullOrWhiteSpace(line))
+            return false;
+
+        var parts = line.Split(',', 5, StringSplitOptions.None);
+        if (parts.Length < 4)
+            return false;
+
+        if (!uint.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var number))
+            return false;
+
+        data = new GameData
+        {
+            Number = number,
+            Name = parts[3].Trim(),
+            Options = ParseOptions(parts.Length == 5 ? parts[4] : null)
         };
 
-        using var reader = new StreamReader(hashesCSV);
-        using var csv = new CsvReader(reader, config);
+        return true;
+    }
 
-        csv.Context.RegisterClassMap<GameDataMap>();
+    private static Dictionary<uint, string> ParseOptions(string? rawOptions)
+    {
+        if (string.IsNullOrWhiteSpace(rawOptions))
+            return [];
 
-        Hashes = csv.GetRecords<GameData>().ToDictionary(x => x.Number, y => y);
+        var options = new Dictionary<uint, string>();
+
+        foreach (var option in rawOptions.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (option.Length == 0)
+                continue;
+
+            options[option.ToMurmur()] = option;
+        }
+
+        return options;
     }
 }

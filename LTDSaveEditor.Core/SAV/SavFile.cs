@@ -58,8 +58,8 @@ public class SavFile
     }
 
 
-    public bool TryGetValue<T>(string name, [MaybeNullWhen(false)] out T value) where T : struct => TryGetValue(name.ToMurmur(), out value);
-    public bool TryGetValue<T>(uint hash, [MaybeNullWhen(false)] out T value) where T : struct
+    public bool TryGetValue<T>(string name, [MaybeNullWhen(false)] out T value) => TryGetValue(name.ToMurmur(), out value);
+    public bool TryGetValue<T>(uint hash, [MaybeNullWhen(false)] out T value) 
     {
         if (Entries.TryGetValue(hash, out var entry))
         {
@@ -74,15 +74,39 @@ public class SavFile
         return false;
     }
 
-    public void SetValue<T>(string name, T value) where T : struct => SetValue(name.ToMurmur(), value);
-    public void SetValue<T>(uint hash, T value) where T : struct
+    private static object ConvertTo<T>(T value, Type targetType)
     {
-        if (Entries.TryGetValue(hash, out var entry))
-        {
-            if (entry.Value is not T)
-                throw new Exception("Entry doesn't match expected value type!");
+        Type sourceType = typeof(T);
 
-            entry.Value = value;
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        if (targetType.IsAssignableFrom(sourceType))
+            return value;
+
+        if (targetType == typeof(string))
+            return value?.ToString() ?? "";
+
+        return Convert.ChangeType(value, targetType);
+    }
+
+    public void SetValue<T>(string name, T value) => SetValue(name.ToMurmur(), value);
+    public void SetValue<T>(uint hash, T value)
+    {
+        if (!Entries.TryGetValue(hash, out var entry) || entry.Value == null)
+            throw new KeyNotFoundException($"Entry 0x{hash:X} was not found.");
+
+        Type targetType = entry.Value.GetType();
+
+        try
+        {
+            object converted = ConvertTo(value, targetType);
+            entry.Value = converted;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Value of type {typeof(T).Name} could not be converted to {targetType.Name}.", ex);
         }
     }
 

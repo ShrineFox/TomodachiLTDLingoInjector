@@ -7,6 +7,7 @@ using LTDSaveEditor.Core.SAV;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace LTDSaveEditor.Avalonia.Views;
@@ -22,6 +23,7 @@ public partial class EditorPageControl : UserControl
         InitializeComponent();
     }
 
+ 
     public EditorPageControl(SavFile savFile)
     {
         InitializeComponent();
@@ -208,16 +210,16 @@ public partial class EditorPageControl : UserControl
         catch { /* Handle parse errors */ }
     }
 
-    private IEnumerable<EnumOption>? GetEnumOptions(SavFileEntry entry, GameData? data)
+    private static List<EnumOption>? GetEnumOptions(SavFileEntry entry, GameData? data)
     {
-        var isEnum = entry.DataType == DataType.Enum || entry.DataType == DataType.EnumArray;
-        var isUInt = entry.DataType == DataType.UInt || entry.DataType == DataType.UIntArray;
+        var isEnum = entry.DataType is DataType.Enum or DataType.EnumArray;
+        var isUInt = entry.DataType is DataType.UInt or DataType.UIntArray;
 
         if (isEnum || isUInt)
         {
             if (data != null && data.Options.Count > 0)
             {
-                return data.Options.Select(opt => new EnumOption { Label = opt.Value, Value = opt.Key }).ToList();
+                return [.. data.Options.Select(opt => new EnumOption { Label = opt.Value, Value = opt.Key })];
             }
 
             // Check if current value(s) match any food hash
@@ -228,20 +230,18 @@ public partial class EditorPageControl : UserControl
             }
             else if (entry.Value is uint[] hashArray && hashArray.Length > 0)
             {
-                isFood = hashArray.Any(h => FoodManager.FoodHashes.ContainsKey(h));
+                isFood = hashArray.Any(FoodManager.FoodHashes.ContainsKey);
             }
 
             if (isFood)
             {
-                return FoodManager.FoodHashes.Select(kvp => new EnumOption { Label = kvp.Value, Value = kvp.Key })
-                    .OrderBy(o => o.Label)
-                    .ToList();
+                return [.. FoodManager.FoodHashes.Select(kvp => new EnumOption { Label = kvp.Value, Value = kvp.Key }).OrderBy(o => o.Label)];
             }
         }
         return null;
     }
 
-    private DataGridColumn CreateColumn(SavFileEntry entry, GameData? data, Type targetType)
+    private static DataGridTemplateColumn CreateColumn(SavFileEntry entry, GameData? data, Type targetType)
     {
         if (targetType == typeof(bool))
         {

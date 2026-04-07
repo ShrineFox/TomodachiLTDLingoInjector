@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="AeonSake.BinaryTools" Version="1.9.2" />
-    <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="JeremyEspresso.MurmurHash" Version="0.0.1" />
   </ItemGroup>
 

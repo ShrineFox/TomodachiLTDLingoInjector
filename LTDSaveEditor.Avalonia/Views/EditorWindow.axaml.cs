@@ -7,6 +7,7 @@ using LTDSaveEditor.Core.SAV;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace LTDSaveEditor.Avalonia.Views;
 
@@ -39,13 +40,23 @@ public partial class EditorWindow : AppWindow
         CreateTab("Player", SaveInstance.Player);
         CreateTab("Mii", SaveInstance.Mii);
         CreateTab("Map", SaveInstance.Map);
+#if DEBUG
+        _tabs.Add(new TabViewItem
+        {
+            Header = "Mii (new)",
+            IsClosable = false,
+            Content = new MiiEditorPageControl(SaveInstance.Mii)
+        });
+#endif
     }
+
 
     private void CreateTab(string title, SavFile savFile)
     {
         var tab = new TabViewItem
         {
             Header = title,
+            IsClosable = false,
             Content = new EditorPageControl(savFile)
         };
         _tabs.Add(tab);
@@ -106,17 +117,13 @@ public partial class EditorWindow : AppWindow
         }
     }
 
-    private async System.Threading.Tasks.Task ShowMessage(string title, string message)
+    private static async Task ShowMessage(string title, string message) => await new ContentDialog
     {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = message,
-            CloseButtonText = "OK",
-            DefaultButton = ContentDialogButton.Close
-        };
-        await dialog.ShowAsync();
-    }
+        Title = title,
+        Content = message,
+        CloseButtonText = "OK",
+        DefaultButton = ContentDialogButton.Close
+    }.ShowAsync();
 
     private void ExitMenu_Click(object? sender, RoutedEventArgs e)
     {
@@ -133,7 +140,7 @@ public partial class EditorWindow : AppWindow
         OpenUrl("https://tlmodding.github.io/");
     }
 
-    private void OpenUrl(string url)
+    private static void OpenUrl(string url)
     {
         try
         {
