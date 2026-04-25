@@ -164,4 +164,9 @@ public partial class EditorWindow : AppWindow
         }
         catch { }
     }
+
+    private void NewSaveEditor_Click(object? sender, RoutedEventArgs e)
+    {
+        OpenUrl("https://ltd-save-editor.pages.dev/");
+    }
 }

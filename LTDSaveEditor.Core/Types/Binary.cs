@@ -5,11 +5,12 @@ namespace LTDSaveEditor.Core.Types;
 public class Binary
 {
     public byte[] Bytes { get; }
+    public Binary(byte[] bytes) => Bytes = bytes;
+
     public Binary(BinaryReader reader)
     {
         var size = reader.ReadInt32();
         Bytes = reader.ReadByteArray(size);
-
     }
 
     public void Write(AeonSake.BinaryTools.BinaryWriter writer)

@@ -36,6 +36,7 @@
                         <MenuItem Header="Discord" Name="DiscordMenu" Click="DiscordMenu_Click" />
                         <MenuItem Header="Wiki" Name="WikiMenu" Click="WikiMenu_Click" />
                     </MenuItem>
+                    <MenuItem Header="Web Editor" Click="NewSaveEditor_Click"/>
                 </Menu>
             </StackPanel>
         </Border>

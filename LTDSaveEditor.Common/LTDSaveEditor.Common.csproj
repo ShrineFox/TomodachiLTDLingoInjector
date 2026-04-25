@@ -15,6 +15,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AeonSake.BinaryTools" Version="1.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LTDSaveEditor.Core\LTDSaveEditor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Data\food_hashes.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
