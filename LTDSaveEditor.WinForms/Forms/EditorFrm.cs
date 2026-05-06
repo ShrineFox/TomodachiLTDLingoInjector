@@ -2,7 +2,10 @@
 using LTDSaveEditor.Core;
 using LTDSaveEditor.Core.SAV;
 using LTDSaveEditor.WinForms.Utility;
+using OpenQA.Selenium.Chrome;
 using WeifenLuo.WinFormsUI.Docking;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 
 namespace LTDSaveEditor.WinForms.Forms;
 
@@ -75,5 +78,68 @@ public partial class EditorFrm : Form
         var result = MessageBox.Show("Are you sure you want to exit? Any unsaved changes will be lost.", "Confirm Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
         e.Cancel = result == DialogResult.No;
+    }
+
+    public class LingoWord
+    {
+        public string Text { get; set; } = "";
+        public string Type { get; set; } = "activities";
+    }
+
+    public void InjectFromTomolingo(object sender, EventArgs e)
+    {
+        List<LingoWord> lingo = new List<LingoWord>();
+
+        string tomoLingoTxt = GetTomolingoText();
+        if (tomoLingoTxt == "")
+            return;
+
+        foreach(var line in tomoLingoTxt.Split('\n').Where(x => x.StartsWith("  { w: \"")))
+        {
+            LingoWord word = new LingoWord();
+            word.Text = line.Replace("  { w: \"", "").Split('\"')[0];
+            word.Type = line.Split("t: \"")[1].Replace("\" },","");
+        }
+        
+        /* uncategorized
+        foreach (var line in tomoLingoTxt.Split('\n').Where(x => x.StartsWith("  \"")))
+        {
+            LingoWord word = new LingoWord();
+            word.Text = line.Replace("  \"", "").Replace("\",", "").Replace("\"", "");
+        }
+        */
+
+        gameDataTree.Nodes.Clear();
+    }
+
+    private string GetTomolingoText()
+    {
+        string url = "https://tomolingo.neocities.org/lingo-data.js";
+        string text = "";
+
+        try
+        {
+            var options = new ChromeOptions();
+
+            options.AddArgument("--headless=new");
+            options.AddArgument("--disable-gpu");
+            options.AddArgument("--window-size=1920,1080");
+            options.AddArgument("--no-sandbox");
+            options.AddArgument("--disable-dev-shm-usage");
+
+            using (IWebDriver driver = new ChromeDriver(options))
+            {
+                driver.Navigate().GoToUrl(url);
+
+                WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                return driver.PageSource;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"An error occurred: {ex.Message}");
+        }
+
+        return text;
     }
 }

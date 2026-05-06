@@ -108,7 +108,7 @@
 
         #endregion
 
-        private TreeView gamedataTree;
+        public TreeView gamedataTree;
         private SplitContainer splitContainer;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem saveToolStripMenuItem;
