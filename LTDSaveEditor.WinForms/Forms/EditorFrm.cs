@@ -8,6 +8,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System.Diagnostics;
 using WeifenLuo.WinFormsUI.Docking;
+using LTDSaveEditor.WinForms.Settings;
 
 namespace LTDSaveEditor.WinForms.Forms;
 
@@ -138,11 +139,47 @@ public partial class EditorFrm : Form
 
         ShuffleLingo(lingo);
 
-        // Target path in the treeview
-        const string targetPath = "UGC.Text.TextData.Text";
-
+        Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+        int li = 0;
         int injected = 0;
         bool replace = replaceExistingLingoToolStripMenuItem.Checked;
+
+        // Set other arrays values
+        for (int i = 0; i < arr.Length; i++)
+        {
+            var val = arr.GetValue(i);
+            bool empty = val == null || (val is string s && string.IsNullOrWhiteSpace(s));
+            if (empty || replace)
+            {
+                // Set lingo text
+                var pick = lingo[li % lingo.Count];
+                arr.SetValue(pick.Text, i);
+
+                // Set lingo genre
+                var mapped = MapGenre(pick.Type);
+                TrySetEnumArray(page, "UGC.Text.TextData.Genre", i, mapped);
+
+                // Set default values for other arrays
+                TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, 1778139330u);
+                TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, "Neutral");
+                TrySetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i, "USen");
+                TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cNone");
+
+                injected++;
+                li++;
+            }
+        }
+
+        dgv.Refresh();
+
+        MessageBox.Show($"Injected {injected} entries of lingo.",
+            "Lingo Injected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+
+    private Array GetArrayToEdit(out EditorPage outPage, out DataGridView outDgv)
+    {
+        // Target path in the treeview
+        const string targetPath = "UGC.Text.TextData.Text";
 
         // Find tree node by path
         TreeNode? FindNodeByFullPath(TreeView tree, string fullPath)
@@ -202,100 +239,20 @@ public partial class EditorFrm : Form
                 // Update DGV data with lingo values
                 if (node.Tag is uint hash && page.SaveFile.TryGetEntry(hash, out var entry))
                 {
-                    int li = 0;
+                    // int li = 0;
                     if (entry.Value is Array arr)
                     {
-                        // Set other arrays values
-                        void TrySetEnumArray(string name, int idx, string enumName)
-                        {
-                            try
-                            {
-                                uint h = enumName.ToMurmur();
-                                if (page.SaveFile.TryGetValue<uint[]>(name, out var uarr) && idx < uarr.Length)
-                                    uarr[idx] = h;
-                            }
-                            catch { }
-                        }
-
-                        void TrySetNumericArray(string name, int idx, uint value)
-                        {
-
-                            if (page.SaveFile.TryGetValue<uint[]>(name, out var uarr) && idx < uarr.Length)
-                            {
-                                uarr[idx] = value;
-                                return;
-                            }
-
-                            if (page.SaveFile.TryGetValue<int[]>(name, out var iarr) && idx < iarr.Length)
-                            {
-                                iarr[idx] = (int)value;
-                                return;
-                            }
-
-                            if (page.SaveFile.TryGetValue<long[]>(name, out var larr) && idx < larr.Length)
-                            {
-                                larr[idx] = value;
-                                return;
-                            }
-                        }
-
-                        string MapGenre(string t)
-                        {
-                            if (string.IsNullOrWhiteSpace(t)) return "Phrase";
-                            return t.Trim().ToLowerInvariant() switch
-                            {
-                                "people" => "Person",
-                                "things" => "Object",
-                                "activities" => "Action",
-                                "topics" => "Topic",
-                                "phrases" => "Phrase",
-                                _ => char.ToUpper(t[0]) + t.Substring(1)
-                            };
-                        }
-
-                        for (int i = 0; i < arr.Length; i++)
-                        {
-                            var val = arr.GetValue(i);
-                            bool empty = val == null || (val is string s && string.IsNullOrWhiteSpace(s));
-                            if (empty || replace)
-                            {
-                                // Set lingo text
-                                var pick = lingo[li % lingo.Count];
-                                arr.SetValue(pick.Text, i);
-
-                                // Set lingo genre
-                                var mapped = MapGenre(pick.Type);
-                                TrySetEnumArray("UGC.Text.TextData.Genre", i, mapped);
-
-                                // Set default values for other arrays
-                                TrySetNumericArray("UGC.Text.TextData.AddTime", i, 1778139330u);
-                                TrySetEnumArray("UGC.Text.TextData.Attribute", i, "Neutral");
-                                TrySetEnumArray("UGC.Text.TextData.RegionLanguageID", i, "USen");
-                                TrySetEnumArray("UGC.Text.TextData.WordAttrGramatically", i, "cNone");
-
-                                injected++;
-                                li++;
-                            }
-                        }
+                        outPage = page;
+                        outDgv = dgv;
+                        return arr;
                     }
-                    else
-                    {
-                        var val = entry.Value;
-                        bool empty = val == null || (val is string s && string.IsNullOrWhiteSpace(s));
-                        if (empty || replace)
-                        {
-                            entry.Value = lingo[0].Text;
-                            injected++;
-                        }
-                    }
-
-                    dgv.Refresh();
                 }
             }
         }
 
-        MessageBox.Show($"Injected {injected} entries of lingo.",
-            "Lingo Injected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        outPage = null;
+        outDgv = null;
+        return null;
     }
 
     private void ShuffleLingo(List<LingoWord> lingo)
@@ -329,7 +286,10 @@ public partial class EditorFrm : Form
         {
             LingoWord word = new LingoWord();
             word.Text = line.Replace("  { w: \"", "").Split('\"')[0];
-            word.Type = line.Split("t: \"")[1].Replace("\" },", "");
+            if (line.Split("t: \"").Length > 1)
+                word.Type = line.Split("t: \"")[1].Replace("\" },", "");
+            else
+                word.Type = "topics";
 
             lingo.Add(word);
         }
@@ -344,5 +304,196 @@ public partial class EditorFrm : Form
             FileName = "https://tomolingo.neocities.org/",
             UseShellExecute = true
         });
+    }
+
+    private void ImportLingo_Click(object sender, EventArgs e)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+        openFileDialog.Filter = "Tsv files (*.tsv)|*.tsv";
+        openFileDialog.Title = "Import lingo from file";
+
+        openFileDialog.ShowDialog();
+        if (!File.Exists(openFileDialog.FileName))
+            return;
+
+        List<LingoWord> lingo = new List<LingoWord>();
+
+        Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+        var lines = File.ReadAllLines(openFileDialog.FileName);
+
+        for (int i = 0; i < arr.Length; i++)
+        {
+            if (i >= lines.Length)
+            {
+                arr.SetValue("", i);
+                TrySetEnumArray(page, "UGC.Text.TextData.Genre", i, "None");
+                TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, 0);
+                TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, "Neutral");
+                TrySetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i, "USen");
+                TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cNone");
+            }
+            else
+            {
+                var splitLine = lines[i].Split('\t');
+                arr.SetValue(splitLine[0], i);
+                TrySetEnumArray(page, "UGC.Text.TextData.Genre", i, splitLine[1]);
+                TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, Convert.ToUInt32(splitLine[2]));
+                TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, splitLine[3]);
+                TrySetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i, splitLine[4]);
+                TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, splitLine[5]);
+            }
+        }
+
+        MessageBox.Show($"Imported lingo from selected TSV file.",
+            "Lingo Imported", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        dgv.Refresh();
+    }
+
+    private void ExportLingo_Click(object sender, EventArgs e)
+    {
+        SaveFileDialog saveFileDialog = new SaveFileDialog();
+        saveFileDialog.Filter = "Tsv files (*.tsv)|*.tsv";
+        saveFileDialog.Title = "Export Lingo to file";
+        saveFileDialog.FileName = "lingo.tsv";
+
+        saveFileDialog.ShowDialog();
+        if (saveFileDialog.FileName != "")
+        {
+            string lingoTsv = "";
+
+            Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+
+            for (int i = 0; i < arr.Length; i++)
+            {
+                var val = arr.GetValue(i);
+                bool empty = val == null || (val is string s && string.IsNullOrWhiteSpace(s));
+                if (!empty)
+                {
+                    string lingoText = arr.GetValue(i).ToString();
+
+                    string lingoGenre = TryGetEnumArray(page, "UGC.Text.TextData.Genre", i);
+                    string lingoAddTime = TryGetNumericArray(page, "UGC.Text.TextData.AddTime", i);
+                    string lingoAttr = TryGetEnumArray(page, "UGC.Text.TextData.Attribute", i);
+                    string lingoRegionID = TryGetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i);
+                    string lingoGrammarAttr = TryGetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i);
+                    lingoTsv += $"{lingoText}\t{lingoGenre}\t{lingoAddTime}\t{lingoAttr}\t{lingoRegionID}\t{lingoGrammarAttr}\n";
+                }
+            }
+
+            File.WriteAllText(saveFileDialog.FileName, lingoTsv);
+            MessageBox.Show("Saved lingo to: " + saveFileDialog.FileName, "Lingo Exported");
+        }
+    }
+
+    private void ClearLingo_Click(object sender, EventArgs e)
+    {
+        Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+
+        for (int i = 0; i < arr.Length; i++)
+        {
+            arr.SetValue("", i);
+            TrySetEnumArray(page, "UGC.Text.TextData.Genre", i, "None");
+            TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, 0);
+            TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, "Neutral");
+            TrySetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i, "USen");
+            TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cNone");
+        }
+
+        MessageBox.Show("Cleared all lingo!", "Lingo Cleared");
+        dgv.Refresh();
+    }
+
+    public void TrySetEnumArray(EditorPage page, string name, int idx, string enumName)
+    {
+        try
+        {
+            uint h = enumName.ToMurmur();
+            if (page.SaveFile.TryGetValue<uint[]>(name, out var uarr) && idx < uarr.Length)
+                uarr[idx] = h;
+        }
+        catch { }
+    }
+
+    public void TrySetNumericArray(EditorPage page, string name, int idx, uint value)
+    {
+
+        if (page.SaveFile.TryGetValue<uint[]>(name, out var uarr) && idx < uarr.Length)
+        {
+            uarr[idx] = value;
+            return;
+        }
+
+        if (page.SaveFile.TryGetValue<int[]>(name, out var iarr) && idx < iarr.Length)
+        {
+            iarr[idx] = (int)value;
+            return;
+        }
+
+        if (page.SaveFile.TryGetValue<long[]>(name, out var larr) && idx < larr.Length)
+        {
+            larr[idx] = value;
+            return;
+        }
+    }
+
+    public string TryGetEnumArray(EditorPage page, string name, int idx)
+    {
+        try
+        {
+            if (page == null) return string.Empty;
+
+            if (page.SaveFile.TryGetValue<uint[]>(name, out var uarr) && idx < uarr.Length)
+            {
+                var enumHash = uarr[idx];
+                if (enumHash == 0) return string.Empty;
+
+                return UserOptions.Instance.EnumDisplayMode switch
+                {
+                    EnumDisplayMode.Name =>
+                        (HashManager.TryGetData(name.ToMurmur(), out var gd) && gd.Options.TryGetValue(enumHash, out var opt)) ? opt : enumHash.ToString("X"),
+                    EnumDisplayMode.Hash => enumHash.ToString("X"),
+                    EnumDisplayMode.Number => enumHash.ToString(),
+                    _ => enumHash.ToString("X"),
+                };
+            }
+        }
+        catch { }
+
+        return string.Empty;
+    }
+
+    public string TryGetNumericArray(EditorPage page, string name, int idx)
+    {
+        try
+        {
+            if (page == null) return string.Empty;
+
+            if (page.SaveFile.TryGetValue<uint[]>(name, out var uarr) && idx < uarr.Length)
+                return uarr[idx].ToString();
+
+            if (page.SaveFile.TryGetValue<int[]>(name, out var iarr) && idx < iarr.Length)
+                return iarr[idx].ToString();
+
+            if (page.SaveFile.TryGetValue<long[]>(name, out var larr) && idx < larr.Length)
+                return larr[idx].ToString();
+        }
+        catch { }
+
+        return string.Empty;
+    }
+
+    public string MapGenre(string t)
+    {
+        if (string.IsNullOrWhiteSpace(t)) return "Phrase";
+        return t.Trim().ToLowerInvariant() switch
+        {
+            "people" => "Person",
+            "things" => "Object",
+            "activities" => "Action",
+            "topics" => "Topic",
+            "phrases" => "Phrase",
+            _ => char.ToUpper(t[0]) + t.Substring(1)
+        };
     }
 }

@@ -44,8 +44,11 @@
             fromTomolingoToolStripMenuItem = new ToolStripMenuItem();
             replaceExistingLingoToolStripMenuItem = new ToolStripMenuItem();
             onlyUseFamilyFriendlyToolStripMenuItem = new ToolStripMenuItem();
+            importLingoListToolStripMenuItem = new ToolStripMenuItem();
+            exportLingoListToolStripMenuItem = new ToolStripMenuItem();
             creditToTomoLingoToolStripMenuItem = new ToolStripMenuItem();
             dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
+            clearLingoListToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -112,7 +115,7 @@
             // 
             // lingoToolStripMenuItem
             // 
-            lingoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { injectToolStripMenuItem, replaceExistingLingoToolStripMenuItem, onlyUseFamilyFriendlyToolStripMenuItem });
+            lingoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { injectToolStripMenuItem, replaceExistingLingoToolStripMenuItem, onlyUseFamilyFriendlyToolStripMenuItem, importLingoListToolStripMenuItem, exportLingoListToolStripMenuItem, clearLingoListToolStripMenuItem });
             lingoToolStripMenuItem.Name = "lingoToolStripMenuItem";
             lingoToolStripMenuItem.Size = new Size(60, 24);
             lingoToolStripMenuItem.Text = "Lingo";
@@ -127,14 +130,14 @@
             // fromTxtFileToolStripMenuItem
             // 
             fromTxtFileToolStripMenuItem.Name = "fromTxtFileToolStripMenuItem";
-            fromTxtFileToolStripMenuItem.Size = new Size(224, 26);
+            fromTxtFileToolStripMenuItem.Size = new Size(202, 26);
             fromTxtFileToolStripMenuItem.Text = "From Txt File";
             fromTxtFileToolStripMenuItem.Click += InjectLingoFromFile_Click;
             // 
             // fromTomolingoToolStripMenuItem
             // 
             fromTomolingoToolStripMenuItem.Name = "fromTomolingoToolStripMenuItem";
-            fromTomolingoToolStripMenuItem.Size = new Size(224, 26);
+            fromTomolingoToolStripMenuItem.Size = new Size(202, 26);
             fromTomolingoToolStripMenuItem.Text = "From Tomolingo";
             fromTomolingoToolStripMenuItem.Click += InjectFromTomolingo_Click;
             // 
@@ -151,6 +154,20 @@
             onlyUseFamilyFriendlyToolStripMenuItem.Name = "onlyUseFamilyFriendlyToolStripMenuItem";
             onlyUseFamilyFriendlyToolStripMenuItem.Size = new Size(265, 26);
             onlyUseFamilyFriendlyToolStripMenuItem.Text = "SFW Only TomoLingo Text";
+            // 
+            // importLingoListToolStripMenuItem
+            // 
+            importLingoListToolStripMenuItem.Name = "importLingoListToolStripMenuItem";
+            importLingoListToolStripMenuItem.Size = new Size(265, 26);
+            importLingoListToolStripMenuItem.Text = "Import Lingo List";
+            importLingoListToolStripMenuItem.Click += ImportLingo_Click;
+            // 
+            // exportLingoListToolStripMenuItem
+            // 
+            exportLingoListToolStripMenuItem.Name = "exportLingoListToolStripMenuItem";
+            exportLingoListToolStripMenuItem.Size = new Size(265, 26);
+            exportLingoListToolStripMenuItem.Text = "Export Lingo List";
+            exportLingoListToolStripMenuItem.Click += ExportLingo_Click;
             // 
             // creditToTomoLingoToolStripMenuItem
             // 
@@ -169,6 +186,13 @@
             dockPanel.Name = "dockPanel";
             dockPanel.Size = new Size(914, 570);
             dockPanel.TabIndex = 3;
+            // 
+            // clearLingoListToolStripMenuItem
+            // 
+            clearLingoListToolStripMenuItem.Name = "clearLingoListToolStripMenuItem";
+            clearLingoListToolStripMenuItem.Size = new Size(265, 26);
+            clearLingoListToolStripMenuItem.Text = "Clear Lingo List";
+            clearLingoListToolStripMenuItem.Click += ClearLingo_Click;
             // 
             // EditorFrm
             // 
@@ -206,5 +230,8 @@
         private ToolStripMenuItem replaceExistingLingoToolStripMenuItem;
         private ToolStripMenuItem creditToTomoLingoToolStripMenuItem;
         private ToolStripMenuItem onlyUseFamilyFriendlyToolStripMenuItem;
+        private ToolStripMenuItem importLingoListToolStripMenuItem;
+        private ToolStripMenuItem exportLingoListToolStripMenuItem;
+        private ToolStripMenuItem clearLingoListToolStripMenuItem;
     }
 }
