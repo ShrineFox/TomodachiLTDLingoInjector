@@ -200,6 +200,7 @@ public partial class EditorFrm : Form
                 TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, 1778139330u);
                 TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, "Neutral");
                 TrySetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i, "USen");
+                TrySetStringArray(page, "UGC.Text.TextData.HowToCallText", i, "");
 
                 // Try to set grammar from lingo text
                 if (setGrammarForaAndanToolStripMenuItem.Checked)
@@ -385,6 +386,7 @@ public partial class EditorFrm : Form
             if (i >= lines.Length)
             {
                 arr.SetValue("", i);
+                TrySetStringArray(page, "UGC.Text.TextData.HowToCallText", i, "");
                 TrySetEnumArray(page, "UGC.Text.TextData.Genre", i, "None");
                 TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, 0);
                 TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, "Neutral");
@@ -432,6 +434,7 @@ public partial class EditorFrm : Form
                 else
                     TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, splitLine[5]);
 
+                TrySetStringArray(page, "UGC.Text.TextData.HowToCallText", i, splitLine[6]);
             }
         }
 
@@ -468,7 +471,8 @@ public partial class EditorFrm : Form
                     string lingoAttr = TryGetEnumArray(page, "UGC.Text.TextData.Attribute", i);
                     string lingoRegionID = TryGetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i);
                     string lingoGrammarAttr = TryGetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i);
-                    lingoTsv += $"{lingoText}\t{lingoGenre}\t{lingoAddTime}\t{lingoAttr}\t{lingoRegionID}\t{lingoGrammarAttr}\n";
+                    string howToCall = TryGetStringArray(page, "UGC.Text.TextData.HowToCallText", i);
+                    lingoTsv += $"{lingoText}\t{lingoGenre}\t{lingoAddTime}\t{lingoAttr}\t{lingoRegionID}\t{lingoGrammarAttr}\t{howToCall}\n";
                 }
             }
 
@@ -484,6 +488,7 @@ public partial class EditorFrm : Form
         for (int i = 0; i < arr.Length; i++)
         {
             arr.SetValue("", i);
+            TrySetStringArray(page, "UGC.Text.TextData.HowToCallText", i, "");
             TrySetEnumArray(page, "UGC.Text.TextData.Genre", i, "None");
             TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, 0);
             TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, "Neutral");
@@ -528,6 +533,19 @@ public partial class EditorFrm : Form
         }
     }
 
+    public void TrySetStringArray(EditorPage page, string name, int idx, string value)
+    {
+        try
+        {
+            if (page.SaveFile.TryGetValue<string[]>(name, out var sarr) && idx < sarr.Length)
+            {
+                sarr[idx] = value;
+                return;
+            }
+        }
+        catch { }
+    }
+
     public string TryGetEnumArray(EditorPage page, string name, int idx)
     {
         try
@@ -548,6 +566,20 @@ public partial class EditorFrm : Form
                     _ => enumHash.ToString("X"),
                 };
             }
+        }
+        catch { }
+
+        return string.Empty;
+    }
+
+    public string TryGetStringArray(EditorPage page, string name, int idx)
+    {
+        try
+        {
+            if (page == null) return string.Empty;
+
+            if (page.SaveFile.TryGetValue<string[]>(name, out var sarr) && idx < sarr.Length)
+                return sarr[idx] ?? string.Empty;
         }
         catch { }
 
