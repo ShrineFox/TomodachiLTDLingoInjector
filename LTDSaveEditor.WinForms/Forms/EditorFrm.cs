@@ -151,8 +151,26 @@ public partial class EditorFrm : Form
             bool empty = val == null || (val is string s && string.IsNullOrWhiteSpace(s));
             if (empty || replace)
             {
+                bool a = false;
+                bool an = false;
+
                 // Set lingo text
                 var pick = lingo[li % lingo.Count];
+                if (setGrammarForaAndanToolStripMenuItem.Checked)
+                {
+                    if (pick.Text.StartsWith("a "))
+                    {
+                        a = true;
+                        pick.Text = pick.Text.Substring(2);
+
+                    }
+                    else if (pick.Text.StartsWith("an "))
+                    {
+                        an = true;
+                        pick.Text = pick.Text.Substring(3);
+                    }
+                }
+
                 arr.SetValue(pick.Text, i);
 
                 // Set lingo genre
@@ -163,7 +181,19 @@ public partial class EditorFrm : Form
                 TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, 1778139330u);
                 TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, "Neutral");
                 TrySetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i, "USen");
-                TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cNone");
+
+                // Try to set grammar from lingo text
+                if (setGrammarForaAndanToolStripMenuItem.Checked)
+                {
+                    if (a)
+                        TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cMasculine");
+                    else if (an)
+                        TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cFeminine");
+                    else
+                        TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cNone");
+                }
+                else
+                    TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cNone");
 
                 injected++;
                 li++;
@@ -335,12 +365,44 @@ public partial class EditorFrm : Form
             else
             {
                 var splitLine = lines[i].Split('\t');
-                arr.SetValue(splitLine[0], i);
+
+                string lingoWord = splitLine[0];
+                bool a = false;
+                bool an = false;
+                if (setGrammarForaAndanToolStripMenuItem.Checked)
+                {
+                    if (lingoWord.StartsWith("a "))
+                    {
+                        a = true;
+                        lingoWord = lingoWord.Substring(2);
+
+                    }
+                    else if (lingoWord.StartsWith("an "))
+                    {
+                        an = true;
+                        lingoWord = lingoWord.Substring(3);
+                    }
+                }
+
+                arr.SetValue(lingoWord, i);
                 TrySetEnumArray(page, "UGC.Text.TextData.Genre", i, splitLine[1]);
                 TrySetNumericArray(page, "UGC.Text.TextData.AddTime", i, Convert.ToUInt32(splitLine[2]));
                 TrySetEnumArray(page, "UGC.Text.TextData.Attribute", i, splitLine[3]);
                 TrySetEnumArray(page, "UGC.Text.TextData.RegionLanguageID", i, splitLine[4]);
-                TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, splitLine[5]);
+
+                // Try to set grammar from lingo text
+                if (setGrammarForaAndanToolStripMenuItem.Checked)
+                {
+                    if (a)
+                        TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cMasculine");
+                    else if (an)
+                        TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cFeminine");
+                    else
+                        TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, "cNone");
+                }
+                else
+                    TrySetEnumArray(page, "UGC.Text.TextData.WordAttrGrammaticality", i, splitLine[5]);
+
             }
         }
 

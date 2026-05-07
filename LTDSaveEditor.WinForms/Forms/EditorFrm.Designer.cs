@@ -46,9 +46,10 @@
             onlyUseFamilyFriendlyToolStripMenuItem = new ToolStripMenuItem();
             importLingoListToolStripMenuItem = new ToolStripMenuItem();
             exportLingoListToolStripMenuItem = new ToolStripMenuItem();
+            clearLingoListToolStripMenuItem = new ToolStripMenuItem();
             creditToTomoLingoToolStripMenuItem = new ToolStripMenuItem();
             dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            clearLingoListToolStripMenuItem = new ToolStripMenuItem();
+            setGrammarForaAndanToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -115,7 +116,7 @@
             // 
             // lingoToolStripMenuItem
             // 
-            lingoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { injectToolStripMenuItem, replaceExistingLingoToolStripMenuItem, onlyUseFamilyFriendlyToolStripMenuItem, importLingoListToolStripMenuItem, exportLingoListToolStripMenuItem, clearLingoListToolStripMenuItem });
+            lingoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { injectToolStripMenuItem, replaceExistingLingoToolStripMenuItem, onlyUseFamilyFriendlyToolStripMenuItem, setGrammarForaAndanToolStripMenuItem, importLingoListToolStripMenuItem, exportLingoListToolStripMenuItem, clearLingoListToolStripMenuItem });
             lingoToolStripMenuItem.Name = "lingoToolStripMenuItem";
             lingoToolStripMenuItem.Size = new Size(60, 24);
             lingoToolStripMenuItem.Text = "Lingo";
@@ -124,7 +125,7 @@
             // 
             injectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fromTxtFileToolStripMenuItem, fromTomolingoToolStripMenuItem });
             injectToolStripMenuItem.Name = "injectToolStripMenuItem";
-            injectToolStripMenuItem.Size = new Size(265, 26);
+            injectToolStripMenuItem.Size = new Size(286, 26);
             injectToolStripMenuItem.Text = "Inject...";
             // 
             // fromTxtFileToolStripMenuItem
@@ -145,29 +146,36 @@
             // 
             replaceExistingLingoToolStripMenuItem.CheckOnClick = true;
             replaceExistingLingoToolStripMenuItem.Name = "replaceExistingLingoToolStripMenuItem";
-            replaceExistingLingoToolStripMenuItem.Size = new Size(265, 26);
+            replaceExistingLingoToolStripMenuItem.Size = new Size(286, 26);
             replaceExistingLingoToolStripMenuItem.Text = "Replace Existing Lingo";
             // 
             // onlyUseFamilyFriendlyToolStripMenuItem
             // 
             onlyUseFamilyFriendlyToolStripMenuItem.CheckOnClick = true;
             onlyUseFamilyFriendlyToolStripMenuItem.Name = "onlyUseFamilyFriendlyToolStripMenuItem";
-            onlyUseFamilyFriendlyToolStripMenuItem.Size = new Size(265, 26);
+            onlyUseFamilyFriendlyToolStripMenuItem.Size = new Size(286, 26);
             onlyUseFamilyFriendlyToolStripMenuItem.Text = "SFW Only TomoLingo Text";
             // 
             // importLingoListToolStripMenuItem
             // 
             importLingoListToolStripMenuItem.Name = "importLingoListToolStripMenuItem";
-            importLingoListToolStripMenuItem.Size = new Size(265, 26);
+            importLingoListToolStripMenuItem.Size = new Size(286, 26);
             importLingoListToolStripMenuItem.Text = "Import Lingo List";
             importLingoListToolStripMenuItem.Click += ImportLingo_Click;
             // 
             // exportLingoListToolStripMenuItem
             // 
             exportLingoListToolStripMenuItem.Name = "exportLingoListToolStripMenuItem";
-            exportLingoListToolStripMenuItem.Size = new Size(265, 26);
+            exportLingoListToolStripMenuItem.Size = new Size(286, 26);
             exportLingoListToolStripMenuItem.Text = "Export Lingo List";
             exportLingoListToolStripMenuItem.Click += ExportLingo_Click;
+            // 
+            // clearLingoListToolStripMenuItem
+            // 
+            clearLingoListToolStripMenuItem.Name = "clearLingoListToolStripMenuItem";
+            clearLingoListToolStripMenuItem.Size = new Size(286, 26);
+            clearLingoListToolStripMenuItem.Text = "Clear Lingo List";
+            clearLingoListToolStripMenuItem.Click += ClearLingo_Click;
             // 
             // creditToTomoLingoToolStripMenuItem
             // 
@@ -187,12 +195,14 @@
             dockPanel.Size = new Size(914, 570);
             dockPanel.TabIndex = 3;
             // 
-            // clearLingoListToolStripMenuItem
+            // setGrammarForaAndanToolStripMenuItem
             // 
-            clearLingoListToolStripMenuItem.Name = "clearLingoListToolStripMenuItem";
-            clearLingoListToolStripMenuItem.Size = new Size(265, 26);
-            clearLingoListToolStripMenuItem.Text = "Clear Lingo List";
-            clearLingoListToolStripMenuItem.Click += ClearLingo_Click;
+            setGrammarForaAndanToolStripMenuItem.Checked = true;
+            setGrammarForaAndanToolStripMenuItem.CheckOnClick = true;
+            setGrammarForaAndanToolStripMenuItem.CheckState = CheckState.Checked;
+            setGrammarForaAndanToolStripMenuItem.Name = "setGrammarForaAndanToolStripMenuItem";
+            setGrammarForaAndanToolStripMenuItem.Size = new Size(286, 26);
+            setGrammarForaAndanToolStripMenuItem.Text = "Set grammar for \"a\" and \"an\"";
             // 
             // EditorFrm
             // 
@@ -233,5 +243,6 @@
         private ToolStripMenuItem importLingoListToolStripMenuItem;
         private ToolStripMenuItem exportLingoListToolStripMenuItem;
         private ToolStripMenuItem clearLingoListToolStripMenuItem;
+        private ToolStripMenuItem setGrammarForaAndanToolStripMenuItem;
     }
 }
