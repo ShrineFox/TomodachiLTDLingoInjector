@@ -63,11 +63,14 @@ public class SavFile
     {
         if (Entries.TryGetValue(hash, out var entry))
         {
-            if (entry.Value is not T val)
-                throw new Exception("Entry doesn't match expected value type!");
+            if (entry.Value is T val)
+            {
+                value = val;
+                return true;
+            }
 
-            value = val;
-            return true;
+            value = default;
+            return false;
         }
 
         value = default;
