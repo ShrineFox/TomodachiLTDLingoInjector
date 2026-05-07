@@ -49,6 +49,12 @@
             exportLingoListToolStripMenuItem = new ToolStripMenuItem();
             clearLingoListToolStripMenuItem = new ToolStripMenuItem();
             creditToTomoLingoToolStripMenuItem = new ToolStripMenuItem();
+            unlockToolStripMenuItem = new ToolStripMenuItem();
+            allClothesToolStripMenuItem = new ToolStripMenuItem();
+            allInteriorsToolStripMenuItem = new ToolStripMenuItem();
+            allFoodToolStripMenuItem = new ToolStripMenuItem();
+            allGoodsToolStripMenuItem = new ToolStripMenuItem();
+            allIslandBuildingMaterialsToolStripMenuItem = new ToolStripMenuItem();
             dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
             menuStrip1.SuspendLayout();
             SuspendLayout();
@@ -56,7 +62,7 @@
             // menuStrip1
             // 
             menuStrip1.ImageScalingSize = new Size(20, 20);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, helpToolStripMenuItem, lingoToolStripMenuItem, creditToTomoLingoToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, helpToolStripMenuItem, lingoToolStripMenuItem, creditToTomoLingoToolStripMenuItem, unlockToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(7, 3, 0, 3);
@@ -195,6 +201,48 @@
             creditToTomoLingoToolStripMenuItem.Text = "Credit to TomoLingo by ryderflyder";
             creditToTomoLingoToolStripMenuItem.Click += TomoLingoLink_Click;
             // 
+            // unlockToolStripMenuItem
+            // 
+            unlockToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { allClothesToolStripMenuItem, allInteriorsToolStripMenuItem, allFoodToolStripMenuItem, allGoodsToolStripMenuItem, allIslandBuildingMaterialsToolStripMenuItem });
+            unlockToolStripMenuItem.Name = "unlockToolStripMenuItem";
+            unlockToolStripMenuItem.Size = new Size(68, 24);
+            unlockToolStripMenuItem.Text = "Unlock";
+            // 
+            // allClothesToolStripMenuItem
+            // 
+            allClothesToolStripMenuItem.Name = "allClothesToolStripMenuItem";
+            allClothesToolStripMenuItem.Size = new Size(277, 26);
+            allClothesToolStripMenuItem.Text = "All Clothes";
+            allClothesToolStripMenuItem.Click += UnlockClothes_Click;
+            // 
+            // allInteriorsToolStripMenuItem
+            // 
+            allInteriorsToolStripMenuItem.Name = "allInteriorsToolStripMenuItem";
+            allInteriorsToolStripMenuItem.Size = new Size(277, 26);
+            allInteriorsToolStripMenuItem.Text = "All Interiors";
+            allInteriorsToolStripMenuItem.Click += UnlockInteriors_Click;
+            // 
+            // allFoodToolStripMenuItem
+            // 
+            allFoodToolStripMenuItem.Name = "allFoodToolStripMenuItem";
+            allFoodToolStripMenuItem.Size = new Size(277, 26);
+            allFoodToolStripMenuItem.Text = "All Food";
+            allFoodToolStripMenuItem.Click += UnlockFood_Click;
+            // 
+            // allGoodsToolStripMenuItem
+            // 
+            allGoodsToolStripMenuItem.Name = "allGoodsToolStripMenuItem";
+            allGoodsToolStripMenuItem.Size = new Size(277, 26);
+            allGoodsToolStripMenuItem.Text = "All Goods";
+            allGoodsToolStripMenuItem.Click += UnlockGoods_Click;
+            // 
+            // allIslandBuildingMaterialsToolStripMenuItem
+            // 
+            allIslandBuildingMaterialsToolStripMenuItem.Name = "allIslandBuildingMaterialsToolStripMenuItem";
+            allIslandBuildingMaterialsToolStripMenuItem.Size = new Size(277, 26);
+            allIslandBuildingMaterialsToolStripMenuItem.Text = "All Island Building Materials";
+            allIslandBuildingMaterialsToolStripMenuItem.Click += UnlockBuildings_Click;
+            // 
             // dockPanel
             // 
             dockPanel.Dock = DockStyle.Fill;
@@ -214,7 +262,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(3, 4, 3, 4);
             Name = "EditorFrm";
-            Text = "Living the Dream: Save Editor (TomoLingo Mod v1.0)";
+            Text = "Living the Dream: Save Editor (TomoLingo Mod v1.1)";
             FormClosing += EditorFrm_FormClosing;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
@@ -244,5 +292,11 @@
         private ToolStripMenuItem exportLingoListToolStripMenuItem;
         private ToolStripMenuItem clearLingoListToolStripMenuItem;
         private ToolStripMenuItem setGrammarForaAndanToolStripMenuItem;
+        private ToolStripMenuItem unlockToolStripMenuItem;
+        private ToolStripMenuItem allClothesToolStripMenuItem;
+        private ToolStripMenuItem allInteriorsToolStripMenuItem;
+        private ToolStripMenuItem allFoodToolStripMenuItem;
+        private ToolStripMenuItem allGoodsToolStripMenuItem;
+        private ToolStripMenuItem allIslandBuildingMaterialsToolStripMenuItem;
     }
 }

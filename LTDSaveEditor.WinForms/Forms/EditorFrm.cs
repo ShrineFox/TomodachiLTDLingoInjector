@@ -137,7 +137,7 @@ public partial class EditorFrm : Form
 
         ShuffleLingo(lingo);
 
-        Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+        Array arr = GetArrayToEdit("UGC.Text.TextData.Text", out EditorPage page, out DataGridView dgv);
         int li = 0;
         int injected = 0;
         bool replace = replaceExistingLingoToolStripMenuItem.Checked;
@@ -231,11 +231,8 @@ public partial class EditorFrm : Form
 
     }
 
-    private Array GetArrayToEdit(out EditorPage outPage, out DataGridView outDgv)
+    private Array GetArrayToEdit(string targetPath, out EditorPage outPage, out DataGridView outDgv)
     {
-        // Target path in the treeview
-        const string targetPath = "UGC.Text.TextData.Text";
-
         // Find tree node by path
         TreeNode? FindNodeByFullPath(TreeView tree, string fullPath)
         {
@@ -375,7 +372,7 @@ public partial class EditorFrm : Form
 
         List<LingoWord> lingo = new List<LingoWord>();
 
-        Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+        Array arr = GetArrayToEdit("UGC.Text.TextData.Text", out EditorPage page, out DataGridView dgv);
         var lines = File.ReadAllLines(openFileDialog.FileName);
 
         for (int i = 0; i < arr.Length; i++)
@@ -453,7 +450,7 @@ public partial class EditorFrm : Form
         {
             string lingoTsv = "";
 
-            Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+            Array arr = GetArrayToEdit("UGC.Text.TextData.Text", out EditorPage page, out DataGridView dgv);
 
             for (int i = 0; i < arr.Length; i++)
             {
@@ -480,7 +477,7 @@ public partial class EditorFrm : Form
 
     private void ClearLingo_Click(object sender, EventArgs e)
     {
-        Array arr = GetArrayToEdit(out EditorPage page, out DataGridView dgv);
+        Array arr = GetArrayToEdit("UGC.Text.TextData.Text", out EditorPage page, out DataGridView dgv);
 
         for (int i = 0; i < arr.Length; i++)
         {
@@ -615,5 +612,130 @@ public partial class EditorFrm : Form
             "phrases" => "Phrase",
             _ => char.ToUpper(t[0]) + t.Substring(1)
         };
+    }
+
+    private void UnlockClothes_Click(object sender, EventArgs e)
+    {
+        Array arr = GetArrayToEdit("Player.ClothInfo.OwnInfoArray.State", out EditorPage page, out DataGridView dgv);
+
+        for (int i = 0; i < arr.Length; i++)
+        {
+            TrySetEnumArray(page, "Player.ClothInfo.OwnInfoArray.State", i, "Obtained");
+        }
+
+        MessageBox.Show("All clothes unlocked!", "Clothes Unlocked");
+    }
+
+    private void UnlockInteriors_Click(object sender, EventArgs e)
+    {
+        SetEnumForCategory("Player.InteriorRoomStyleInfo", "State", "Obtained");
+
+        Array arr = GetArrayToEdit("Player.FloorInfo.State", out EditorPage page, out DataGridView dgv);
+        for (int i = 0; i < arr.Length; i++)
+        {
+            TrySetEnumArray(page, "Player.FloorInfo.State", i, "Obtained");
+        }
+
+        MessageBox.Show("All Interiors unlocked!", "Interiors Unlocked");
+    }
+
+    public void SetEnumForCategory(string categoryPrefix, string terminalField, string enumName)
+    {
+        if (string.IsNullOrWhiteSpace(categoryPrefix) || string.IsNullOrWhiteSpace(terminalField) || string.IsNullOrWhiteSpace(enumName))
+            return;
+
+        uint enumHash = enumName.ToMurmur();
+
+        // Iterate over all open editor pages
+        foreach (var content in dockPanel.Contents)
+        {
+            if (content is DockableControl<EditorPage> dockControl && dockControl.Control is EditorPage page)
+            {
+                // For each entry in this save file
+                foreach (var kv in page.SaveFile.Entries)
+                {
+                    var hash = kv.Key;
+                    var entry = kv.Value;
+                    var name = HashManager.GetName(hash);
+
+                    if (string.IsNullOrWhiteSpace(name))
+                        continue;
+
+                    // Match category prefix
+                    if (!name.StartsWith(categoryPrefix + ".", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(name, categoryPrefix, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var parts = name.Split('.');
+                    if (parts.Length == 0) continue;
+                    if (!string.Equals(parts.Last(), terminalField, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    try
+                    {
+                        if (entry.Value is Array arr)
+                        {
+                            for (int i = 0; i < arr.Length; i++)
+                            {
+                                TrySetEnumArray(page, name, i, enumName);
+                            }
+                        }
+                        else
+                        {
+                            // Single value enum field
+                            page.SaveFile.SetValue<uint>(name, enumHash);
+                        }
+                    }
+                    catch { }
+                }
+
+                DataGridView? FindDataGridView(Control parent)
+                {
+                    foreach (Control c in parent.Controls)
+                    {
+                        if (c is DataGridView dgv) return dgv;
+                        var nested = FindDataGridView(c);
+                        if (nested != null) return nested;
+                    }
+
+                    return null;
+                }
+
+                var refreshDgv = FindDataGridView(page);
+                refreshDgv?.Refresh();
+            }
+        }
+    }
+
+    private void UnlockFood_Click(object sender, EventArgs e)
+    {
+        Array arr = GetArrayToEdit("Player.FoodInfo.State", out EditorPage page, out DataGridView dgv);
+
+        for (int i = 0; i < arr.Length; i++)
+        {
+            TrySetEnumArray(page, "Player.FoodInfo.State", i, "Obtained");
+        }
+
+        MessageBox.Show("All food items unlocked!", "Food Unlocked");
+    }
+
+    private void UnlockGoods_Click(object sender, EventArgs e)
+    {
+        SetEnumForCategory("Player.GoodsInfo2", "State", "Obtained");
+        MessageBox.Show("All Goods unlocked!", "Goods Unlocked");
+    }
+
+    private void UnlockBuildings_Click(object sender, EventArgs e)
+    {
+        Array arr = GetArrayToEdit("Player.BuildingInfo2.State", out EditorPage page, out DataGridView dgv);
+
+        for (int i = 0; i < arr.Length; i++)
+        {
+            TrySetEnumArray(page, "Player.BuildingInfo2.State", i, "Obtained");
+            TrySetNumericArray(page, "Player.BuildingInfo2.OwnNum", i, 999);
+
+        }
+
+        MessageBox.Show("All building materials unlocked!", "Building Materials Unlocked");
     }
 }
