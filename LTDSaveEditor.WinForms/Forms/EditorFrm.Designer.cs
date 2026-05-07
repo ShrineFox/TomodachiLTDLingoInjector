@@ -44,12 +44,12 @@
             fromTomolingoToolStripMenuItem = new ToolStripMenuItem();
             replaceExistingLingoToolStripMenuItem = new ToolStripMenuItem();
             onlyUseFamilyFriendlyToolStripMenuItem = new ToolStripMenuItem();
+            setGrammarForaAndanToolStripMenuItem = new ToolStripMenuItem();
             importLingoListToolStripMenuItem = new ToolStripMenuItem();
             exportLingoListToolStripMenuItem = new ToolStripMenuItem();
             clearLingoListToolStripMenuItem = new ToolStripMenuItem();
             creditToTomoLingoToolStripMenuItem = new ToolStripMenuItem();
             dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            setGrammarForaAndanToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -156,6 +156,15 @@
             onlyUseFamilyFriendlyToolStripMenuItem.Size = new Size(286, 26);
             onlyUseFamilyFriendlyToolStripMenuItem.Text = "SFW Only TomoLingo Text";
             // 
+            // setGrammarForaAndanToolStripMenuItem
+            // 
+            setGrammarForaAndanToolStripMenuItem.Checked = true;
+            setGrammarForaAndanToolStripMenuItem.CheckOnClick = true;
+            setGrammarForaAndanToolStripMenuItem.CheckState = CheckState.Checked;
+            setGrammarForaAndanToolStripMenuItem.Name = "setGrammarForaAndanToolStripMenuItem";
+            setGrammarForaAndanToolStripMenuItem.Size = new Size(286, 26);
+            setGrammarForaAndanToolStripMenuItem.Text = "Set grammar for \"a\" and \"an\"";
+            // 
             // importLingoListToolStripMenuItem
             // 
             importLingoListToolStripMenuItem.Name = "importLingoListToolStripMenuItem";
@@ -195,15 +204,6 @@
             dockPanel.Size = new Size(914, 570);
             dockPanel.TabIndex = 3;
             // 
-            // setGrammarForaAndanToolStripMenuItem
-            // 
-            setGrammarForaAndanToolStripMenuItem.Checked = true;
-            setGrammarForaAndanToolStripMenuItem.CheckOnClick = true;
-            setGrammarForaAndanToolStripMenuItem.CheckState = CheckState.Checked;
-            setGrammarForaAndanToolStripMenuItem.Name = "setGrammarForaAndanToolStripMenuItem";
-            setGrammarForaAndanToolStripMenuItem.Size = new Size(286, 26);
-            setGrammarForaAndanToolStripMenuItem.Text = "Set grammar for \"a\" and \"an\"";
-            // 
             // EditorFrm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -214,7 +214,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(3, 4, 3, 4);
             Name = "EditorFrm";
-            Text = "Living the Dream: Save Editor (TomoLingo Mod)";
+            Text = "Living the Dream: Save Editor (TomoLingo Mod v1.0)";
             FormClosing += EditorFrm_FormClosing;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
