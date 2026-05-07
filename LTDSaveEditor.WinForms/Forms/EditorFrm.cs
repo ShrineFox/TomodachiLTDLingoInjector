@@ -87,6 +87,7 @@ public partial class EditorFrm : Form
     {
         public string Text { get; set; } = "";
         public string Type { get; set; } = "activities";
+        public string SubmissionCredit { get; set; } = "";
     }
 
     public void InjectFromTomolingo_Click(object sender, EventArgs e)
@@ -143,6 +144,14 @@ public partial class EditorFrm : Form
         int li = 0;
         int injected = 0;
         bool replace = replaceExistingLingoToolStripMenuItem.Checked;
+        bool saveCredits = false;
+        string creditsTxt = "Lingo sourced from users who submitted to https://tomolingo.neocities.org/ \r\n\r\n" +
+            "TomoLingo|Submission Credits\r\n";
+
+        /* 
+         * if (dgv.Columns.Count == 1)
+            dgv.Columns.Add("Credit", "Submission Credit");
+        */
 
         // Set other arrays values
         for (int i = 0; i < arr.Length; i++)
@@ -156,6 +165,13 @@ public partial class EditorFrm : Form
 
                 // Set lingo text
                 var pick = lingo[li % lingo.Count];
+
+                if (pick.SubmissionCredit != "")
+                {
+                    saveCredits = true;
+                    creditsTxt += $"{pick.Text} | {pick.SubmissionCredit}\r\n";
+                }
+
                 if (setGrammarForaAndanToolStripMenuItem.Checked)
                 {
                     if (pick.Text.StartsWith("a "))
@@ -170,6 +186,9 @@ public partial class EditorFrm : Form
                         pick.Text = pick.Text.Substring(3);
                     }
                 }
+
+                // Set TomoLingo credit
+                // dgv.Rows[i].Cells[1].Value = pick.SubmissionCredit;
 
                 arr.SetValue(pick.Text, i);
 
@@ -204,6 +223,14 @@ public partial class EditorFrm : Form
 
         MessageBox.Show($"Injected {injected} entries of lingo.",
             "Lingo Injected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        if (saveCredits)
+        {
+            string creditsPath = Path.GetFullPath(".\\" + "tomolingo_submission_credits.txt");
+            File.WriteAllText(creditsPath, creditsTxt);
+            Process.Start("notepad.exe", creditsPath);
+        }
+
     }
 
     private Array GetArrayToEdit(out EditorPage outPage, out DataGridView outDgv)
@@ -316,10 +343,12 @@ public partial class EditorFrm : Form
         {
             LingoWord word = new LingoWord();
             word.Text = line.Replace("  { w: \"", "").Split('\"')[0];
+
             if (line.Split("t: \"").Length > 1)
                 word.Type = line.Split("t: \"")[1].Replace("\" },", "");
-            else
-                word.Type = "topics";
+
+            if (line.Split("c: \"").Length > 1)
+                word.SubmissionCredit = line.Split("c: \"")[1].Split('\"')[0];
 
             lingo.Add(word);
         }
